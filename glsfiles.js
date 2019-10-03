@@ -17,7 +17,7 @@ module.exports = {
                 header = cols;
                 continue;
             }
-            let row = [];
+            let row = {};
             for (const i in header) {
                 row[header[i]] = cols[i];
             }
@@ -145,16 +145,16 @@ module.exports = {
     /**
      * read a text file as a JSON object
      */
-    readJSONFile = function (fname) {
+    readJSONFile: function (fname) {
         let text = this.readFile(fname);
         let json = JSON.parse(text);
         return json;
-    };
+    },
     /**
      * read a text file as a JSONC (JSON w/ comments) object
      * WARNING: Doesn't like http://urls.... (because of //)
      */
-    readJSONCFile = function (fname) {
+    readJSONCFile: function (fname) {
         let lines = this.readListFile(fname);
         for (let i = 0; i < lines.length; i++) {
             let jsonLine = lines[i];
@@ -167,5 +167,5 @@ module.exports = {
         //console.error(jsonline);
         let json = JSON.parse(jsonline || '{}');
         return json;
-    };
-};
+    }
+}
