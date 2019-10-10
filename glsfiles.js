@@ -126,8 +126,8 @@ module.exports = {
     /**
      * read all the filenames and directory-names (including . and ..)
      */
-    readDir: function (dirname) {
-        return fs.readdirSync(dirname);
+    readDir: function (dirname, theFilter = (fname => fname !== '.')) {
+        return fs.readdirSync(dirname).filter(theFilter);
     },
 
     /**
