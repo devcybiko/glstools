@@ -76,7 +76,7 @@ NOTE: Use [fs.statSync](https://nodejs.org/api/fs.html#fs_fs_statsync_path_optio
 
 ## run: function (cmd) : String
 
-Runs the `bash` command on the supplied `cmd` and returns the results from `stdout` as one long string. (NOTE: You and use `.split(\n)` to break the results into an array of lines). Also, if there is an error `stderr` is returned instead without warning. You'll have to somehow parse the returned string to determine if things went well or not
+Runs the `bash` command on the supplied `cmd` and returns the results from `stdout` as one long string. (NOTE: You and use `.split()` to break the results into an array of lines). Also, if there is an error `stderr` is returned instead without warning. You'll have to somehow parse the returned string to determine if things went well or not
 
 ## Usage
 

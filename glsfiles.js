@@ -60,7 +60,7 @@ module.exports = {
      */
     readTextFile: function (fname) {
         let text = this.readFile(fname);
-        let textByLine = text.split('\n');
+        let textByLine = text.split('');
         return textByLine;
     },
 
@@ -81,7 +81,7 @@ module.exports = {
      * write an array of strings to a text file
      */
     writeTextFile: function (fname, list) {
-        let buffer = new Buffer.from(list.join('\n'));
+        let buffer = new Buffer.from(list.join(''));
 
         let fd = fs.openSync(fname, 'w');
         fs.writeSync(fd, buffer, 0, buffer.length, null);
@@ -126,7 +126,7 @@ module.exports = {
     /**
      * read all the filenames and directory-names (including . and ..)
      */
-    readDir: function (dirname, theFilter = (fname => fname !== '.')) {
+    readDir: function (dirname, theFilter = (fname => fname[0] !== '.')) {
         return fs.readdirSync(dirname).filter(theFilter);
     },
 
@@ -135,12 +135,20 @@ module.exports = {
      * if there's an error, returns stderr
      */
     run: function (cmd) {
-        return execSync(cmd, (err, stdout, stderr) => {
-            if (err) {
-                return stderr;
-            }
-            return stdout;
-        });
+        let result = "Error..."
+        try {
+            result = execSync(cmd, {encoding: 'utf8'});
+        } catch(e) {
+            return e;
+        }
+        return result;
+
+        // return execSync(cmd, (err, stdout, stderr) => {
+        //     if (err) {
+        //         return stderr;
+        //     }
+        //     return stdout;
+        // });
     },
     /**
      * read a text file as a JSON object
@@ -163,7 +171,7 @@ module.exports = {
                 lines[i] = jsonLine.substring(0, index);
             }
         }
-        let jsonline = lines.join('\n');
+        let jsonline = lines.join('');
         //console.error(jsonline);
         let json = JSON.parse(jsonline || '{}');
         return json;
