@@ -85,7 +85,7 @@ module.exports = {
 
         let fd = fs.openSync(fname, 'w');
         fs.writeSync(fd, buffer, 0, buffer.length, null);
-        fs.close(fd);
+        fs.closeSync(fd);
     },
 
     /**
