@@ -60,7 +60,7 @@ module.exports = {
      */
     readTextFile: function (fname) {
         let text = this.readFile(fname);
-        let textByLine = text.split('');
+        let textByLine = text.split('\n');
         return textByLine;
     },
 
@@ -81,7 +81,7 @@ module.exports = {
      * write an array of strings to a text file
      */
     writeTextFile: function (fname, list) {
-        let buffer = new Buffer.from(list.join(''));
+        let buffer = new Buffer.from(list.join('\n'));
 
         let fd = fs.openSync(fname, 'w');
         fs.writeSync(fd, buffer, 0, buffer.length, null);
@@ -171,7 +171,7 @@ module.exports = {
                 lines[i] = jsonLine.substring(0, index);
             }
         }
-        let jsonline = lines.join('');
+        let jsonline = lines.join('\n');
         //console.error(jsonline);
         let json = JSON.parse(jsonline || '{}');
         return json;
