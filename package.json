@@ -1,8 +1,8 @@
 {
-  "name": "glsfiles",
-  "version": "1.0.13",
+  "name": "gls",
+  "version": "1.0.0",
   "description": "",
-  "main": "glsfiles.js",
+  "main": "js/gls.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "pub": "npm publish --access public"
