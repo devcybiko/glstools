@@ -1,4 +1,4 @@
 const gls = require("../js/index");
 
-let out = gls.files.readRegExp('./test/glsfiles-test02.txt');
+let out = gls.files.readJSON('./test/glsfiles-test04.txt');
 console.log(out);

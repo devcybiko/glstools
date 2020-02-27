@@ -40,13 +40,14 @@ module.exports = {
 
     /**
      *  reads a file removing all comments (#) and blank lines
+     *  (trims all whitespace)
      */
     readScript: function (fname) {
         let lines = this.readList(fname);
         let rows = [];
         for (let line of lines) {
             let pound = line.indexOf('#');
-            if (pound > 0) line = line.substring(0, pound);
+            if (pound > -1) line = line.substring(0, pound);
             line = line.trim();
             if (line.length === 0) continue;
             rows.push(line);
@@ -56,6 +57,7 @@ module.exports = {
 
     /**
      * read a text file as an array of strings
+     * (preserves whitespace)
      */
     readList: function (fname) {
         let text = this.read(fname);
@@ -104,6 +106,41 @@ module.exports = {
     },
 
     /**
+     * read all the filenames and directory-names (including . and ..)
+     */
+    readDir: function (dirname, theFilter = (fname => fname[0] !== '.')) {
+        return fs.readdirSync(dirname).filter(theFilter);
+    },
+
+    /**
+     * read a text file as a JSON object
+     */
+    readJSON: function (fname) {
+        let text = this.read(fname);
+        let json = JSON.parse(text);
+        return json;
+    },
+    /**
+     * read a text file as a JSONC (JSON w/ comments) object
+     * WARNING: Doesn't like http://urls.... (because of //)
+     */
+    readJSONC: function (fname) {
+        let lines = this.readList(fname);
+        for (let i = 0; i < lines.length; i++) {
+            let jsonLine = lines[i];
+            let http = json
+            let index = jsonLine.indexOf('//');
+            if (index > -1) {
+                lines[i] = jsonLine.substring(0, index);
+            }
+        }
+        let jsonline = lines.join('\n');
+        //console.error(jsonline);
+        let json = JSON.parse(jsonline || '{}');
+        return json;
+    },
+
+        /**
      * create an empty file and all associated directories
      */
     create: function (fname) {
@@ -123,13 +160,6 @@ module.exports = {
     },
 
     /**
-     * read all the filenames and directory-names (including . and ..)
-     */
-    readDir: function (dirname, theFilter = (fname => fname[0] !== '.')) {
-        return fs.readdirSync(dirname).filter(theFilter);
-    },
-
-    /**
      * run the command and return the stdout
      * if there's an error, returns stderr
      */
@@ -141,38 +171,6 @@ module.exports = {
             return e;
         }
         return result;
+    },
 
-        // return execSync(cmd, (err, stdout, stderr) => {
-        //     if (err) {
-        //         return stderr;
-        //     }
-        //     return stdout;
-        // });
-    },
-    /**
-     * read a text file as a JSON object
-     */
-    readJSON: function (fname) {
-        let text = this.readFile(fname);
-        let json = JSON.parse(text);
-        return json;
-    },
-    /**
-     * read a text file as a JSONC (JSON w/ comments) object
-     * WARNING: Doesn't like http://urls.... (because of //)
-     */
-    readJSONC: function (fname) {
-        let lines = this.readListFile(fname);
-        for (let i = 0; i < lines.length; i++) {
-            let jsonLine = lines[i];
-            let index = jsonLine.indexOf('//');
-            if (index > -1) {
-                lines[i] = jsonLine.substring(0, index);
-            }
-        }
-        let jsonline = lines.join('\n');
-        //console.error(jsonline);
-        let json = JSON.parse(jsonline || '{}');
-        return json;
-    }
 }

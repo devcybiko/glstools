@@ -30,8 +30,18 @@ Line three #last line`;
     it('can read a file as csv', function () {
         let csv = files.readCSV('test/glsfiles-test03.txt');
         let expected = [
-            {col1:'a9',col2:' a2',col3:' a3'}, 
-            {col1:'b1',col2:' b2',col3:' b3'}, {col1:'c1',col2:'c2',col3:'c3'}];
+            {col1:'a1',col2:' a2',col3:' a3'}, 
+            {col1:'b1',col2:' b2',col3:' b3'}, 
+            {col1:'c1',col2:' c2',col3:' c3'}];
         test.value(csv).is(expected);
+    });
+    it('can read a file as json', function () {
+        let json = files.readJSON('test/glsfiles-test04.txt');
+        let expected = {
+            "a": ["a1", "a2", "a3"],
+            "b": ["b1", "b2", "b3"],
+            "c": ["c1", "c2", "c3"]
+        };
+        test.value(json).is(expected);
     });
 });
