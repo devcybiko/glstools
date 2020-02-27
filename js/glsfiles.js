@@ -43,7 +43,7 @@ module.exports = {
     /**
      *  reads a file removing all comments (#) and blank lines
      */
-    readListFile: function (fname) {
+    readRCFile: function (fname) {
         let lines = this.readTextFile(fname);
         let rows = [];
         for (const i in lines) {
@@ -58,7 +58,7 @@ module.exports = {
     /**
      * read a text file as an array of strings
      */
-    readTextFile: function (fname) {
+    readListFile: function (fname) {
         let text = this.readFile(fname);
         let textByLine = text.split('\n');
         return textByLine;
