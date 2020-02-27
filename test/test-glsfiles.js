@@ -12,10 +12,8 @@ Line three #last line`;
     });
     it('can read a file as a list', function () {
         let list = gls.readListFile('test/glsfiles-test01.txt');
-        let expected = [`Line xone #comment`, `Line two #blank line`, ``, `Line three #last line`];
-        test.value(list, function (it, i) {
-            return list[i] === expected[i]
-        });
+        let expected = [`Line one #comment`, `Line two #blank line`, ``, `Line three #last line`];
+        test.value(list).hasValues(expected);
     });
     it('can read a file as a script', function () {
         let list = gls.readScriptFile('test/glsfiles-test01.txt');
@@ -26,10 +24,8 @@ Line three #last line`;
     });
     it('can read a file as regex', function () {
         let regex = gls.readScriptFile('test/glsfiles-test02.txt');
-        let expected = [/foox/, /bar/, /^.*Greg.*Smith$/];
-        test.value(regex, function (it, i) {
-            return regex[i] === expected[i]
-        });
+        let expected = ["/foo/", "/bar/", "/^.*Greg.*Smith$/"];
+        test.value(regex).hasValues(expected);
     });
     it('can read a file as csv', function () {
         let csv = gls.readCSVFile('test/glsfiles-test03.txt');

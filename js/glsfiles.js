@@ -34,7 +34,6 @@ module.exports = {
         for (const i in lines) {
             let line = lines[i];
             let regexp = new RegExp(line, 'i');
-            console.log(regexp);
             rows.push(regexp);
         }
         return rows;
