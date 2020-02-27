@@ -45,8 +45,8 @@ module.exports = {
         let lines = this.readList(fname);
         let rows = [];
         for (let line of lines) {
-            let 
-            if (line[0] === '#') continue;
+            let pound = line.indexOf('#');
+            if (pound > 0) line = line.substring(0, pound);
             line = line.trim();
             if (line.length === 0) continue;
             rows.push(line);
