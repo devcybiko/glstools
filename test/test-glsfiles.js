@@ -44,4 +44,13 @@ Line three #last line`;
         };
         test.value(json).is(expected);
     });
+    it('can read a file as jsonc', function () {
+        let json = files.readJSONC('test/glsfiles-test05.txt');
+        let expected = {
+            "a": ["a1", "a2", "a3"],
+            "b": ["b1", "b2", "b3"],
+            "c": ["c1", "c2", "c3"]
+        };
+        test.value(json).is(expected);
+    });
 });

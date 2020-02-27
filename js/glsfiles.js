@@ -128,10 +128,15 @@ module.exports = {
         let lines = this.readList(fname);
         for (let i = 0; i < lines.length; i++) {
             let jsonLine = lines[i];
-            let http = json
-            let index = jsonLine.indexOf('//');
+            for(let index = jsonLine.indexOf('//');
+
+            let proto = jsonLine.indexOf('://');
             if (index > -1) {
-                lines[i] = jsonLine.substring(0, index);
+                if(proto == -1) {
+                    lines[i] = jsonLine.substring(0, index);
+                } else if (proto !== index-1) {
+                    lines[i] = jsonLine.substring(0, index);
+                }
             }
         }
         let jsonline = lines.join('\n');
