@@ -6,8 +6,8 @@ module.exports = {
      * simplistic CSV reader
      * @param {} pagesCSVFname
      */
-    readCSVFile: function (pagesCSVFname) {
-        let lines = this.readListFile(pagesCSVFname);
+    readCSV: function (pagesCSVFname) {
+        let lines = this.readScript(pagesCSVFname);
         let header = [];
         let rows = [];
         for (const i in lines) {
@@ -28,11 +28,10 @@ module.exports = {
 
     // reads a file removing all comments (#) and blank lines
     // and converts each line to a regexp
-    readRegExpFile: function (fname) {
-        let lines = this.readScriptFile(fname);
+    readRegExp: function (fname) {
+        let lines = this.readScript(fname);
         let rows = [];
-        for (const i in lines) {
-            let line = lines[i];
+        for (const line of lines) {
             let regexp = new RegExp(line, 'i');
             rows.push(regexp);
         }
@@ -42,13 +41,14 @@ module.exports = {
     /**
      *  reads a file removing all comments (#) and blank lines
      */
-    readScriptFile: function (fname) {
-        let lines = this.readListFile(fname);
+    readScript: function (fname) {
+        let lines = this.readList(fname);
         let rows = [];
-        for (const i in lines) {
-            let line = lines[i];
+        for (let line of lines) {
+            let 
             if (line[0] === '#') continue;
-            if (line.trim().length === 0) continue;
+            line = line.trim();
+            if (line.length === 0) continue;
             rows.push(line);
         }
         return rows;
@@ -57,8 +57,8 @@ module.exports = {
     /**
      * read a text file as an array of strings
      */
-    readListFile: function (fname) {
-        let text = this.readFile(fname);
+    readList: function (fname) {
+        let text = this.read(fname);
         let textByLine = text.split('\n');
         return textByLine;
     },
@@ -66,7 +66,7 @@ module.exports = {
     /**
      * read a text file as one long string
      */
-    readFile: function (fname) {
+    read: function (fname) {
         let text = "";
         try {
             text = fs.readFileSync(fname).toString('utf-8');
@@ -79,7 +79,7 @@ module.exports = {
     /**
      * write an array of strings to a text file
      */
-    writeTextFile: function (fname, list) {
+    writeList: function (fname, list) {
         let buffer = new Buffer.from(list.join('\n'));
 
         let fd = fs.openSync(fname, 'w');
@@ -91,7 +91,7 @@ module.exports = {
      * write a string directly to a text file
      * create the fully-qualified directory if it doesn't exist
      */
-    writeFile: function (fname, str) {
+    write: function (fname, str) {
         let lastSlash = fname.lastIndexOf('/');
         if (lastSlash > -1) {
             dirname = fname.substring(0, lastSlash);
@@ -106,7 +106,7 @@ module.exports = {
     /**
      * create an empty file and all associated directories
      */
-    createFile: function (fname) {
+    create: function (fname) {
         console.log(`fname=${fname}`);
         this.writeFile(fname, '');
     },
@@ -152,7 +152,7 @@ module.exports = {
     /**
      * read a text file as a JSON object
      */
-    readJSONFile: function (fname) {
+    readJSON: function (fname) {
         let text = this.readFile(fname);
         let json = JSON.parse(text);
         return json;
@@ -161,7 +161,7 @@ module.exports = {
      * read a text file as a JSONC (JSON w/ comments) object
      * WARNING: Doesn't like http://urls.... (because of //)
      */
-    readJSONCFile: function (fname) {
+    readJSONC: function (fname) {
         let lines = this.readListFile(fname);
         for (let i = 0; i < lines.length; i++) {
             let jsonLine = lines[i];

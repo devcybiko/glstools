@@ -1,9 +1,9 @@
 var test = require('unit.js');
 var gls = require('../js/index').files;
 
-describe('testing glsfiles', function () {
+describe('testing gls.files', function () {
     it('can read a text file', function () {
-        let text = gls.readFile('test/glsfiles-test01.txt');
+        let text = gls.read('test/glsfiles-test01.txt');
         let expected = `Line one #comment
 Line two #blank line
 
@@ -11,20 +11,18 @@ Line three #last line`;
         test.assert.equal(text, expected);
     });
     it('can read a file as a list', function () {
-        let list = gls.readListFile('test/glsfiles-test01.txt');
+        let list = gls.readList('test/glsfiles-test01.txt');
         let expected = [`Line one #comment`, `Line two #blank line`, ``, `Line three #last line`];
         test.value(list).hasValues(expected);
     });
     it('can read a file as a script', function () {
-        let list = gls.readScriptFile('test/glsfiles-test01.txt');
-        let expected = [`Line xone`, `Line two`, `Line three`];
-        test.value(list, function (it, i) {
-            return list[i] === expected[i]
-        });
+        let list = gls.readScript('test/glsfiles-test01.txt');
+        let expected = [`Line one`, `Line two`, `Line three`];
+        test.value(list).hasValues(expected);
     });
     it('can read a file as regex', function () {
         let regex = gls.readRegExpFile('test/glsfiles-test02.txt');
-        let expected = [new RegExp("foo", "i"), new RegExp("/bar/i"), new RegExp("/^.*Greg.*Smith$/i"];
+        let expected = [new RegExp("foo", "i"), new RegExp("bar", "i"), new RegExp("/^.*Greg.*Smith$", "i")];
         test.value(regex).hasValues(expected);
     });
     it('can read a file as csv', function () {
