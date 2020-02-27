@@ -145,7 +145,7 @@ module.exports = {
       * create an empty file and all associated directories
       */
     create: function (fname) {
-        this.writeFile(fname, '');
+        this.write(fname, '');
     },
 
     /**

@@ -54,17 +54,34 @@ Line three #last line`;
         test.value(json).is(expected);
     });
     it('can write a string to a file', function () {
-        let lines = `Line one #comment
+        let testFile = `/tmp/test.txt`;
+        let expected = `Line one #comment
         Line two #blank line
         
         Line three #last line`;
-        files.write(`/tmp/test.txt', lines);       
-        let json = files.readJSONC('test/glsfiles-test05.txt');
-        let expected = {
-            "a": ["a1", "a2", "a3"],
-            "b": ["b1", "b2", "b3"],
-            "c": ["c1", "c2", "http://google.com"]
-        };
-        test.value(json).is(expected);
+        files.write(testFile, expected);
+        let lines = files.read(testFile); 
+        test.value(lines).is(expected);  
+    });
+    it('can write an array of strings to a file', function () {
+        let testFile = `/tmp/test.txt`;
+        let expected = `Line one #comment
+        Line two #blank line
+        
+        Line three #last line`.split("\n");
+        files.writeList(testFile, expected);
+        let lines = files.readList(testFile); 
+        test.value(lines).is(expected);  
+    });
+    it('can create an empty file', function () {
+        let testFile = `/tmp/test.txt`;
+        files.create(testFile);
+        let lines = files.read(testFile); 
+        test.value(lines).is("");  
+    });
+    it('can create a folder', function () {
+        let testFile = `/tmp/glsfiles/testdir`;
+        files.create(testFile);
+        let dirs = 
     });
 });
