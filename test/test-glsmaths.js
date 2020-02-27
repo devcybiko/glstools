@@ -1,8 +1,12 @@
 var test = require('unit.js');
-var files = require('../js/index').files;
+var maths = require('../js/index').maths;
 
-describe('testing gls.files', function () {
-    it('can read a text file', function () {
+describe('testing gls.maths', function () {
+    it('generate random numbers', function () {
+        let numbers = {};
+        for(let i=0; i<1000; i++) {
+            let rnd = maths.random(1,6);
+
         let text = files.read('test/glsfiles-test01.txt');
         let expected = `Line one #comment
 Line two #blank line
