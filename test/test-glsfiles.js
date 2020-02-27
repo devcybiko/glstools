@@ -82,6 +82,12 @@ Line three #last line`;
     it('can create a folder', function () {
         let testFile = `/tmp/glsfiles/testdir`;
         files.create(testFile);
-        let dirs = 
+        let dirs = files.readDir(`/tmp/glsfiles`);
+        test.value(dirs).is([`testdir`]);
+    });
+    it('can run a command', function () {
+        let cmd = `ls -a /tmp/glsfiles`;
+        let result = files.run(cmd);
+        test.value(result).is('');
     });
 });
