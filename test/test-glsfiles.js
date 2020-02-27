@@ -23,8 +23,8 @@ Line three #last line`;
         });
     });
     it('can read a file as regex', function () {
-        let regex = gls.readScriptFile('test/glsfiles-test02.txt');
-        let expected = ["/foo/", "/bar/", "/^.*Greg.*Smith$/"];
+        let regex = gls.readRegExpFile('test/glsfiles-test02.txt');
+        let expected = [new RegExp("foo", "i"), new RegExp("/bar/i"), new RegExp("/^.*Greg.*Smith$/i"];
         test.value(regex).hasValues(expected);
     });
     it('can read a file as csv', function () {
