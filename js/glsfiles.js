@@ -72,7 +72,7 @@ module.exports = {
         let text = "";
         try {
             text = fs.readFileSync(fname).toString('utf-8');
-        } catch(ex) {
+        } catch (ex) {
             // do nothing
         }
         return text;
@@ -128,12 +128,16 @@ module.exports = {
         let lines = this.readList(fname);
         for (let i = 0; i < lines.length; i++) {
             let jsonLine = lines[i];
-            let index = 0;
-            for(index = jsonLine.indexOf('//'); index > -1; index = jsonLine.indexOf('//', index) {
-                let proto = jsonLine.indexOf('://', index -1);
+            let index;
+            for (index = jsonLine.indexOf('//');
+                index > -1;
+                index = jsonLine.indexOf('//', index + 1)) {
+                let proto = jsonLine.indexOf('://', index - 1);
                 if (proto === index - 1) {
-                    index++;
                     continue;
+                } else {
+                    jsonLine = jsonLine(0, index);
+                    break;
                 }
             }
         }
@@ -143,9 +147,9 @@ module.exports = {
         return json;
     },
 
-        /**
-     * create an empty file and all associated directories
-     */
+    /**
+ * create an empty file and all associated directories
+ */
     create: function (fname) {
         console.log(`fname=${fname}`);
         this.writeFile(fname, '');
@@ -169,8 +173,8 @@ module.exports = {
     run: function (cmd) {
         let result = "Error..."
         try {
-            result = execSync(cmd, {encoding: 'utf8'});
-        } catch(e) {
+            result = execSync(cmd, { encoding: 'utf8' });
+        } catch (e) {
             return e;
         }
         return result;
