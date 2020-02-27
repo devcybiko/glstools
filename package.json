@@ -2,9 +2,9 @@
   "name": "glstools",
   "version": "1.0.2",
   "description": "",
-  "main": "js/index.js",
+  "emain": "js/index.js",
   "scripts": {
-    "test": "mocha test/all.js",
+    "test": "mocha --recursive test",
     "pub": "npm publish --access public"
   },
   "author": "",
