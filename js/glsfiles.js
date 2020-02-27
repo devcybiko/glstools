@@ -123,11 +123,7 @@ module.exports = {
      * write an array of strings to a text file
      */
     writeList: function (fname, list) {
-        let buffer = new Buffer.from(list.join('\n'));
-
-        let fd = fs.openSync(fname, 'w');
-        fs.writeSync(fd, buffer, 0, buffer.length, null);
-        fs.closeSync(fd);
+        this.write(fname, list.join('\n'));
     },
 
     /**
