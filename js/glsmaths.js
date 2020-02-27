@@ -11,7 +11,6 @@ module.exports = {
             results.push(copy[r]);
             copy.splice(r, 1);
         }
-        console.log(results);
         return results;
     }
 }

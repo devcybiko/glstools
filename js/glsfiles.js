@@ -158,19 +158,4 @@ module.exports = {
             });
         }
     },
-
-    /**
-     * run the command and return the stdout
-     * if there's an error, returns stderr
-     */
-    run: function (cmd) {
-        let result = "Error..."
-        try {
-            result = execSync(cmd, { encoding: 'utf8' });
-        } catch (e) {
-            return e;
-        }
-        return result;
-    },
-
 }

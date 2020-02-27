@@ -26,10 +26,5 @@ module.exports = {
         }
         return output;
     },
-    sleep$: async function(ms) { //note that the $ indicates it returns a promise - it's a$ynchronous
-        return new Promise((resolve) => {
-            setTimeout(resolve, ms);
-        });
-    } 
 }
 
