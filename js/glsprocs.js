@@ -1,3 +1,4 @@
+const { execSync } = require('child_process');
 module.exports = {
     /**
      * run the command and return the stdout

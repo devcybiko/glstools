@@ -4,4 +4,4 @@ const maths = require('./glsmaths');
 const procs = require('./glsprocs');
 const debug = require('./glsdebug');
 
-module.exports = {files, strings, maths, debug};
+module.exports = {files, strings, procs, maths, debug};

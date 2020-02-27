@@ -85,10 +85,4 @@ Line three #last line`;
         let dirs = files.readDir(`/tmp/glsfiles`);
         test.value(dirs).is([`testdir`]);
     });
-    it('can run a command', function () {
-        let cmd = `ls -a /tmp/glsfiles`;
-        let result = files.run(cmd);
-        let expected = `.\n..\ntestdir\n`;
-        test.value(result).is(expected);
-    });
 });
