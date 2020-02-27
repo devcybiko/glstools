@@ -5,21 +5,29 @@ var { log } = require('../js/log');
 describe('testing gls.maths', function () {
     it('generate random numbers', function () {
         let high = 6;
-        let numbers = new Array(high);
-        numbers = numbers.map((value, i) => log(i));
+        let numbers = new Array(high).fill(0);
         let samples = 100000;
         let error = 0.1;
         for (let i = 0; i < samples; i++) {
-            let rnd = maths.random(1, high);
+            let rnd = maths.random(1, high)-1;
             numbers[rnd] = numbers[rnd] + 1;
         }
-        numbers = numbers.slice(1);
         test.value(numbers).matchEach(function (it) {
             let min = (samples * (1 - error)) / high;
             let max = (samples * (1 + error)) / high;
-            log(numbers);
-            log(`${min} ${it} ${max}`);
             return min < it && it < max;
         });
+    });
+    it('shuffle cards', function () {
+        let cards = [];
+        for(let i=0; i<4; i++) {
+            let suit = "DCHS"[i];
+            for(let j=0; j<13; j++) {
+                let card = "A23456789JQK"[j];
+                cards.push(suit+card);
+            }
+        }
+        let newCards = maths.shuffle(cards);
+        newCards.forEach((card, i) => test.assert(card !== cards[i]));
     });
 });
