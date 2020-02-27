@@ -49,7 +49,7 @@ Line three #last line`;
         let expected = {
             "a": ["a1", "a2", "a3"],
             "b": ["b1", "b2", "b3"],
-            "c": ["c1", "c2", "c3"]
+            "c": ["c1", "c2", "http://google.com"]
         };
         test.value(json).is(expected);
     });

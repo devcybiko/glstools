@@ -79,33 +79,6 @@ module.exports = {
     },
 
     /**
-     * write an array of strings to a text file
-     */
-    writeList: function (fname, list) {
-        let buffer = new Buffer.from(list.join('\n'));
-
-        let fd = fs.openSync(fname, 'w');
-        fs.writeSync(fd, buffer, 0, buffer.length, null);
-        fs.closeSync(fd);
-    },
-
-    /**
-     * write a string directly to a text file
-     * create the fully-qualified directory if it doesn't exist
-     */
-    write: function (fname, str) {
-        let lastSlash = fname.lastIndexOf('/');
-        if (lastSlash > -1) {
-            dirname = fname.substring(0, lastSlash);
-            this.createDir(dirname);
-        }
-        let buffer = new Buffer.from(str);
-        let fd = fs.openSync(fname, 'w');
-        fs.writeSync(fd, buffer, 0, buffer.length, null);
-        fs.closeSync(fd);
-    },
-
-    /**
      * read all the filenames and directory-names (including . and ..)
      */
     readDir: function (dirname, theFilter = (fname => fname[0] !== '.')) {
@@ -136,22 +109,46 @@ module.exports = {
                 if (proto === index - 1) {
                     continue;
                 } else {
-                    jsonLine = jsonLine(0, index);
+                    jsonLine = jsonLine.substring(0, index);
                     break;
                 }
             }
+            lines[i] = jsonLine;
         }
-        let jsonline = lines.join('\n');
-        //console.error(jsonline);
-        let json = JSON.parse(jsonline || '{}');
+        let result = lines.join('\n');
+        let json = JSON.parse(result || '{}');
         return json;
+    },
+    /**
+     * write an array of strings to a text file
+     */
+    writeList: function (fname, list) {
+        let buffer = new Buffer.from(list.join('\n'));
+
+        let fd = fs.openSync(fname, 'w');
+        fs.writeSync(fd, buffer, 0, buffer.length, null);
+        fs.closeSync(fd);
     },
 
     /**
- * create an empty file and all associated directories
- */
+     * write a string directly to a text file
+     * create the fully-qualified directory if it doesn't exist
+     */
+    write: function (fname, str) {
+        let lastSlash = fname.lastIndexOf('/');
+        if (lastSlash > -1) {
+            dirname = fname.substring(0, lastSlash);
+            this.createDir(dirname);
+        }
+        let buffer = new Buffer.from(str);
+        let fd = fs.openSync(fname, 'w');
+        fs.writeSync(fd, buffer, 0, buffer.length, null);
+        fs.closeSync(fd);
+    },
+    /**
+      * create an empty file and all associated directories
+      */
     create: function (fname) {
-        console.log(`fname=${fname}`);
         this.writeFile(fname, '');
     },
 
