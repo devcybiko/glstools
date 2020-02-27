@@ -5,5 +5,6 @@ console.log(out);
 
 let numbers = 6;
 let foo = new Array(numbers);
-foo = foo.map(i => {return 0});
+let bar = foo.map(i => {return 1});
 console.log(foo);
+console.log(bar);
