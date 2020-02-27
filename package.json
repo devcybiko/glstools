@@ -8,5 +8,8 @@
     "pub": "npm publish --access public"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "unit.js": "^2.1.1"
+  }
 }
