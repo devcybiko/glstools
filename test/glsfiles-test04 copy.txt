@@ -1,0 +1,6 @@
+{
+    "a": ["a1", "a2", "a3"], // first line
+    "b": ["b1", "b2", "b3"], // second line
+    "c": ["c1", "c2", "http://google.com"] // third line
+
+}
