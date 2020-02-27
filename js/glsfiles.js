@@ -29,7 +29,7 @@ module.exports = {
     // reads a file removing all comments (#) and blank lines
     // and converts each line to a regexp
     readRegExpFile: function (fname) {
-        let lines = this.readListFile(fname);
+        let lines = this.readScriptFile(fname);
         let rows = [];
         for (const i in lines) {
             let line = lines[i];
@@ -43,8 +43,8 @@ module.exports = {
     /**
      *  reads a file removing all comments (#) and blank lines
      */
-    readRCFile: function (fname) {
-        let lines = this.readTextFile(fname);
+    readScriptFile: function (fname) {
+        let lines = this.readListFile(fname);
         let rows = [];
         for (const i in lines) {
             let line = lines[i];
