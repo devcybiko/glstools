@@ -1,5 +1,5 @@
 var test = require('unit.js');
-var maths = require('../js/index').maths;
+var maths = require('../index').maths;
 var { log } = require('../js/log');
 
 describe('testing gls.maths', function () {

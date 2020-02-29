@@ -1,5 +1,5 @@
 var test = require('unit.js');
-var files = require('../js/index').files;
+var files = require('../index').files;
 
 describe('testing gls.files', function () {
     it('can read a text file', function () {

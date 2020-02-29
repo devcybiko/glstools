@@ -1,6 +1,6 @@
 var test = require('unit.js');
-var files = require('../js/index').files;
-var procs = require('../js/index').procs;
+var files = require('../index').files;
+var procs = require('../index').procs;
 
 describe('testing gls.procs', function () {
     it('can create a folder and read it', function () {

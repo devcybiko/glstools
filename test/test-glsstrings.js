@@ -1,5 +1,5 @@
 var test = require('unit.js');
-var strings = require('../js/index').strings;
+var strings = require('../index').strings;
 var {log} = require('../js/log');
 
 describe('testing gls.strings', function () {
