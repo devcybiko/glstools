@@ -6,6 +6,9 @@ PSON - read/write a simplified JSON that supports comments
 } - ends an object - must stand on its own line
 [ - begins an array - must stand on its own line
 ] - ends an array - must stand on its own line
+( - begins a list - an ordered set of key-value pairs
+) - ends a list 
+
 key:value
    - a one-line key-value pair. no quoting, all on one line
    - no commas or semicolons to end the value, no special characters but slash and backslash
@@ -18,6 +21,8 @@ key:value
    - if you want to insert the literal '//' prepend each slash with \
 NOTES:
    - indentation and whitespaces are ignored
+   - Lists are implemented as arrays of key-value pairs
+   - key-value pairs are implemented as an array of 2 values (key,value)
 
 parse() - reads text PSON and returns a JS object where all values are strings
 stringify() - serializes an object into PSON. All objects are ignored. 
