@@ -250,9 +250,10 @@ Object.defineProperty(Array.prototype, 'stringify', {
         return result;
     }
 });
+
 Object.defineProperty(Array.prototype, 'get$', {
     value: function (name) {
-        for (entry of this) {
+        for (let entry of this) {
             if (entry.key === name) return entry.value$;
         }
         return undefined;
