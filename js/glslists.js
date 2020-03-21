@@ -34,8 +34,8 @@ stringify() - serializes an object into PSON. All objects are ignored.
 
 */
 
-const is = require('./glschars');
-const dbg = require('./glsdebug');
+const is = require('glstools/js/glschars');
+const dbg = require('glstools/js/glsdebug');
 
 dbg.off();
 // dbg.set(dbg.VERBOSE)
@@ -122,23 +122,23 @@ module.exports = {
             key = '';
             value = line.trim();
         }
-        dbg.verbose({key, value});
+        dbg.verbose({ key, value });
         if (value === '(') { // list identifier on a line by itself
             let [obj, next] = this._parseMain(value, lines, i); // multi-line object
-            dbg.verbose({next, i, value});
+            dbg.verbose({ next, i, value });
             value = obj;
             i = next;
         } else if (value[0] === '(') { // we're expecting a complete list on one line
             let [obj, next] = this._parseMain(value, lines, i); // single-line object
             value = obj;
-            dbg.verbose({next, i, value});
+            dbg.verbose({ next, i, value });
             i = next;
         } else {
             value = this._escape(value);
         }
-        dbg.terse({key, value, i});
+        dbg.terse({ key, value, i });
         dbg.end();
-        return [ key, value, i ];
+        return [key, value, i];
     },
     _parseList: function (currentLine, lines, i) { // parses one object and returns that object and index
         dbg.begin();
@@ -147,13 +147,13 @@ module.exports = {
             let line = currentLine.substring(1, currentLine.length - 1);
             let items = this._split(line, ',').map(item => this._escape(item.trim()));
             for (let j = 0; j < items.length; j++) {
-                let [ key, value, next ] = this._parseKeyValue(items[j], lines, i);
+                let [key, value, next] = this._parseKeyValue(items[j], lines, i);
                 obj.push([key, value]);
             }
             dbg.verbose(obj);
             dbg.verbose(i);
             dbg.end();
-            return [ obj, i ];
+            return [obj, i];
         }
         while (true) {
             let [line, next] = this._getLine(lines, i);
@@ -171,7 +171,7 @@ module.exports = {
         dbg.verbose(obj);
         dbg.verbose(i);
         dbg.end();
-        return [ obj, i ]
+        return [obj, i]
     },
 
     _parseMain: function (currentLine, lines, i) { // the full string and an index into the string, returns {object, i}
@@ -199,7 +199,94 @@ module.exports = {
         dbg.end();
         return obj;
     },
-
-    stringify: function(obj) {
+    get: function (list, name) {
+        for (entry of list) {
+            if (entry[0] === name) return entry[1];
+        }
+        return undefined;
+    },
+    stringify: function (obj) {
+        //
     }
 }
+// Array.prototype.get = function(name) {
+//     for(entry of this) {
+//         console.log(entry.key);
+//         if (entry.key === name) return entry.value;
+//     }
+//     return undefined;
+// }
+
+// Array.prototype.getAll = function(name) {
+//     let result = [];
+//     for(entry of this) {
+//         if (entry[0] === name) result.push(entry.value);
+//     }
+//     return undefined;
+// }
+
+// Object.defineProperty(Array.prototype, 'sortf', {
+//     value: function(compare) { return [].concat(this).sort(compare); }
+// });
+
+Object.defineProperty(Array.prototype, 'get', {
+    value: function (name) {
+        for (entry of this) {
+            if (entry.key === name) return entry.value;
+        }
+        return undefined;
+    }
+});
+
+Object.defineProperty(Array.prototype, 'get$', {
+    value: function (name) {
+        for (entry of this) {
+            if (entry.key === name) return entry.value$;
+        }
+        return undefined;
+    }
+});
+
+Object.defineProperty(Array.prototype, 'sortf', {
+    value: function (compare) { return [].concat(this).sort(compare); }
+});
+
+Object.defineProperty(Array.prototype, "key", {
+    get: function key() {
+        return this[0];
+    }
+});
+
+Object.defineProperty(Array.prototype, "keys", {
+    get: function keys() {
+        let result = [];
+        for(let entry of this) {
+            result.push(entry.key);
+        }
+        return result;
+    }
+});
+
+Object.defineProperty(Array.prototype, "value", {
+    get: function value() {
+        return this[1];
+    }
+});
+
+Object.defineProperty(Array.prototype, "value$", {
+    get: function value() {
+        let value = this[1];
+        if (typeof value === "string") return [['', value]];
+        else return value;
+    }
+});
+
+Object.defineProperty(Array.prototype, "values", {
+    get: function values() {
+        let result = [];
+        for(let entry of this) {
+            result.push(entry.value);
+        }
+        return result;
+    }
+});
