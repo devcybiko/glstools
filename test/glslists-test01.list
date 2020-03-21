@@ -1,0 +1,26 @@
+(
+    templates: (./templates/bootstrap, ./templates/gls)
+    lib:./lib
+    index: ./sites/starter/index.html
+    outfile: ./sites/starter/index.js
+
+    NavBar: (
+        parent: navbardiv
+        id: navbar
+        text: NavBar
+        children: (
+            NavItem: (text: Home)
+            NavItem: (text: Link)
+            NavItem: (text: Disabled)
+            NavDropDown: (
+                text: Dropdown
+                children: (
+                    NavDropDownItem: (text: Action)
+                    NavDropDownItem: (text: Another Action)
+                    NavDropDownItem: (text: Something Else Here, action: https://google.com)
+                )
+            )
+            NavSearchForm: (text: Search)
+        )
+    )
+)

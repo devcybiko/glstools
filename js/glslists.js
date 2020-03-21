@@ -37,8 +37,8 @@ stringify() - serializes an object into PSON. All objects are ignored.
 const is = require('./glschars');
 const dbg = require('./glsdebug');
 
-dbg.on();
-dbg.set(dbg.VERBOSE)
+dbg.off();
+// dbg.set(dbg.VERBOSE)
 
 module.exports = {
     _getLine: function (lines, i) {
@@ -191,7 +191,6 @@ module.exports = {
     // returns an object
     parse: function (s = "()") {
         dbg.begin(s);
-        console.log(`...${s}`);
         is._escapeChars['s'] = ' '; // create special escape character for space
         let lines = s.trim().split('\n');
         lines = this._preprocessLines(lines);
@@ -200,6 +199,7 @@ module.exports = {
         dbg.end();
         return obj;
     },
+
     stringify: function(obj) {
     }
 }
