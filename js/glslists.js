@@ -34,8 +34,8 @@ stringify() - serializes an object into PSON. All objects are ignored.
 
 */
 
-const is = require('glstools/js/glschars');
-const dbg = require('glstools/js/glsdebug');
+const is = require('./glschars');
+const dbg = require('./glsdebug');
 
 dbg.off();
 // dbg.set(dbg.VERBOSE)

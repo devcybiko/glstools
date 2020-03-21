@@ -1,7 +1,7 @@
 //
 // read a PSON file and spit out the corresponding JSON
 //
-const PSON = require('./PSON');
+const PSON = require('./js/PSON');
 const glsfiles = require('glstools').files;
 
 function main() {

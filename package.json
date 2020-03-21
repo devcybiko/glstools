@@ -1,6 +1,6 @@
 {
   "name": "glstools",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "",
   "emain": "js/index.js",
   "scripts": {
@@ -10,7 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "collections": "^5.1.9",
     "mocha": "^7.1.1",
     "unit.js": "^2.1.1"
   }
