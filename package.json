@@ -10,6 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "collections": "^5.1.9",
+    "mocha": "^7.1.1",
     "unit.js": "^2.1.1"
   }
 }

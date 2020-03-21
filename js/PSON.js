@@ -39,7 +39,7 @@ stringify() - serializes an object into PSON. All objects are ignored.
 */
 
 const is = require('./glschars');
-const dbg = require('glstools').debug;
+const dbg = require('./glsdebug');
 var Map = require("collections/map");
 
 const USEMAP = false;
