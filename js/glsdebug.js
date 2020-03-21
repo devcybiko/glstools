@@ -66,12 +66,12 @@ module.exports = {
     },
     // always outputs stdout
     log: function (data) { 
-        console.log(data);
+        this._log(console.log, data);
     },
 
     // always outputs on stderr
     error: function (data) { // always outputs stderr
-        console.error(data);
+        this._log(console.error, data);
     },
 
     // verbose - prints out in verbose mode
