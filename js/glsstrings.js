@@ -26,5 +26,12 @@ module.exports = {
         }
         return output;
     },
+    isLower: function(s) {
+        return s.toLowerCase() === s;
+    },
+    isUpper: function(s) {
+        return s.toUpperCase() === s;
+    }
+
 }
 

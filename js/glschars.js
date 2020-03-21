@@ -19,5 +19,13 @@ module.exports = {
     },
     var: function(c) {
         return ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_".indexOf(c) !== -1);
+    },
+    upper: function(s) {
+        if (!s) return false;
+        return s[0].toLowerCase() === s;
+    },
+    lower: function(s) {
+        if (!s) return false;
+        return s[0].toUpperCase() === s;
     }
 }
