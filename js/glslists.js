@@ -204,9 +204,6 @@ module.exports = {
             if (entry[0] === name) return entry[1];
         }
         return undefined;
-    },
-    stringify: function (obj) {
-        //
     }
 }
 // Array.prototype.get = function(name) {
@@ -238,6 +235,21 @@ Object.defineProperty(Array.prototype, 'get', {
     }
 });
 
+Object.defineProperty(Array.prototype, 'stringify', {
+    value: function () {
+        let result = '[';
+        for (let entry of this) {
+            result += `${entry.key}:`;
+            if (Array.isArray(entry.value)) {
+                result += entry.value.stringify();
+            } else {
+                result += entry.value;
+            }
+            result += ']';
+        }
+        return result;
+    }
+});
 Object.defineProperty(Array.prototype, 'get$', {
     value: function (name) {
         for (entry of this) {
@@ -260,7 +272,7 @@ Object.defineProperty(Array.prototype, "key", {
 Object.defineProperty(Array.prototype, "keys", {
     get: function keys() {
         let result = [];
-        for(let entry of this) {
+        for (let entry of this) {
             result.push(entry.key);
         }
         return result;
@@ -284,7 +296,7 @@ Object.defineProperty(Array.prototype, "value$", {
 Object.defineProperty(Array.prototype, "values", {
     get: function values() {
         let result = [];
-        for(let entry of this) {
+        for (let entry of this) {
             result.push(entry.value);
         }
         return result;
