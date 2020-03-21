@@ -204,6 +204,9 @@ module.exports = {
             if (entry[0] === name) return entry[1];
         }
         return undefined;
+    },
+    stringify: function (obj) {
+        //
     }
 }
 // Array.prototype.get = function(name) {
@@ -236,24 +239,27 @@ Object.defineProperty(Array.prototype, 'get', {
 });
 
 Object.defineProperty(Array.prototype, 'stringify', {
-    value: function () {
-        let result = '[';
+    value: function (indent=0) {
+        let spaces = " ".repeat(indent * 2);
+        let spaces1 = " ".repeat((indent+1) * 2);
+        let result = '(';
         for (let entry of this) {
-            result += `${entry.key}:`;
+            result += '\n' + spaces1 + `${entry.key}:`;
             if (Array.isArray(entry.value)) {
-                result += entry.value.stringify();
+                result += entry.value.stringify(indent+1);
             } else {
                 result += entry.value;
             }
-            result += ']';
         }
+        result += '\n';
+        result += spaces + ')';
         return result;
     }
 });
 
 Object.defineProperty(Array.prototype, 'get$', {
     value: function (name) {
-        for (let entry of this) {
+        for (entry of this) {
             if (entry.key === name) return entry.value$;
         }
         return undefined;
@@ -273,7 +279,7 @@ Object.defineProperty(Array.prototype, "key", {
 Object.defineProperty(Array.prototype, "keys", {
     get: function keys() {
         let result = [];
-        for (let entry of this) {
+        for(let entry of this) {
             result.push(entry.key);
         }
         return result;
@@ -297,7 +303,7 @@ Object.defineProperty(Array.prototype, "value$", {
 Object.defineProperty(Array.prototype, "values", {
     get: function values() {
         let result = [];
-        for (let entry of this) {
+        for(let entry of this) {
             result.push(entry.value);
         }
         return result;
