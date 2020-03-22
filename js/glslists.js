@@ -136,7 +136,7 @@ module.exports = {
         } else {
             value = this._escape(value);
         }
-        dbg.terse({ key, value, i });
+        dbg.verbose({ key, value, i });
         dbg.end();
         return [key, value, i];
     },
