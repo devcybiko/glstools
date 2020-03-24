@@ -32,15 +32,30 @@ stringify() - serializes an object into PSON. All objects are ignored.
         // - except at EOLN for key:value pairs (if you want spaces add '\ ' for each space)
         // NOTE: If you want spaces at the end of a line, add a trailing comment //
 
+Macros - are invoked with a commment followed by a pound sign: //#MacroName
+    - //#Include <relative filename> (see _cwd below) 
+        -- inserts the named file at that point in the file
+        -- it is recursive. So, included files can include other files as well
+        -- note: everything is relative to the last element of _cwd
+
+_cwd: an array of current working directories
+    Used when //#Include macro is implemented
+    The _cwd[-1] is used as the relative path to the file included.
+    So, if you want to use relative includes, you have to 
+    lists._cwd.push(<the current path>);
+    lists.parse(lines);
+    lists._cwd.pop();
 */
 
 const is = require('./glschars');
 const dbg = require('./glsdebug');
+const gfile = require('./glsfiles');
 
 dbg.off();
 // dbg.set(dbg.VERBOSE)
 
 module.exports = {
+    _cwd: ["."],
     _getLine: function (lines, i) {
         dbg.begin()
         dbg.verbose(i);
@@ -97,14 +112,38 @@ module.exports = {
         dbg.end();
         return t;
     },
+    _macroInclude(i, lines, params) {
+        let cwd = this._cwd[this._cwd.length-1];
+        let fname = cwd + "/" + params;
+        let includedLines = gfile.readList(fname);
+        lines.splice(i, 1, ...includedLines);
+    },
+    _expandMacros(i, lines) {
+        let line = lines[i];
+        let icomment = line.indexOf(" //"); // allows for http://url.com
+        let imacro = line.indexOf(" //#");
+        let startComment = !!line.startsWith("//");
+        let startMacro = !!line.startsWith("//#");
+        if (startMacro || imacro >= 0) {
+            let macro;
+            if (imacro >=0) macro = line.substring(imacro + 4).trim();
+            else macro = line.substring(3).trim();
+            imacro = macro.indexOf(' ');
+            let macroCmd = macro.substring(0, imacro);
+            let macroParams = macro.substring(imacro + 1);
+            eval(`this._macro${macroCmd}(i, lines, macroParams)`);
+        } else if (startComment || icomment >= 0) {
+            // comment processing
+            if (icomment >= 0) lines[i] = lines[i].substring(0, icomment);
+            else lines[i] = '';
+        }
+    },
     _preprocessLines: function (lines) {
         dbg.begin();
         let result = [];
-        for (let longLine of lines) {
-            let line = longLine.trim();
-            if (line.startsWith("//")) line = "";
-            comment = line.indexOf(" //");
-            if (comment > -1) line = line.substring(0, comment);
+        for (let i=0; i<lines.length; i++) {
+            this._expandMacros(i, lines);
+            let line = lines[i].trim();
             result.push(line);
         }
         dbg.end();
