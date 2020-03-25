@@ -21,9 +21,9 @@ module.exports = {
         return ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_".indexOf(c) !== -1);
     },
     upper: function(s) {
-        return s[0].toLowerCase() === s;
+        return s[0].toUpperCase() === s;
     },
     lower: function(s) {
-        return s[0].toUpperCase() === s;
+        return s[0].toLowerCase() === s;
     }
 }
