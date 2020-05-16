@@ -50,12 +50,14 @@ _cwd: an array of current working directories
 const is = require('./glschars');
 const dbg = require('./glsdebug');
 const gfile = require('./glsfiles');
+const strings = require('./glsstrings');
 
 dbg.off();
 // dbg.set(dbg.VERBOSE)
 
 module.exports = {
     _cwd: ["."],
+    _env: [{}],
     _getLine: function (lines, i) {
         dbg.begin()
         dbg.verbose(i);
@@ -114,8 +116,8 @@ module.exports = {
     },
     _macroInclude(i, lines, params) {
         let cwd = this._cwd[this._cwd.length-1];
-        let fname = cwd + "/" + params;
-        let includedLines = gfile.readList(fname);
+        let fname = strings.meta(params);
+        let includedLines = gfile.readList(fname, this._env[this._env.length-1]);
         lines.splice(i, 1, ...includedLines);
     },
     _expandMacros(i, lines) {

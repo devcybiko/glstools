@@ -85,4 +85,19 @@ Line three #last line`;
         let dirs = files.readDir(`/tmp/glsfiles`);
         test.value(dirs).is([`testdir`]);
     });
+    it('can expand a path', function () {
+        let testPath = "/a:/b:/c/d/e";
+        let paths = files.parsePath(testPath);
+        test.value(paths).is(["/a", "/b", "/c/d/e"]);
+    });
+    it('can find a file', function () {
+        let testPath = ".:./test:./js:";
+        let paths = files.parsePath(testPath);
+        let indexjs = files.findFname(paths, 'index.js');
+        test.value(indexjs).is("./index.js");
+        let testglsfilesjs = files.findFname(paths, 'test-glsfiles.js');
+        test.value(testglsfilesjs).is("./test/test-glsfiles.js");
+        let glscharsjs = files.findFname(paths, 'glschars.js');
+        test.value(glscharsjs).is("./js/glschars.js");
+    });
 });

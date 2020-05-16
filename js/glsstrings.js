@@ -31,7 +31,27 @@ module.exports = {
     },
     isUpper: function(s) {
         return s.toUpperCase() === s;
+    },
+    expand: function(str, env) {
+        if (!env) return str;
+        let code = "(function(){";
+        for(let key of Object.keys(env)) {
+            let val = env[key];
+            code += `let ${key} = "${val}";\n`;
+        }
+        code += 'return `'+str+'`;})()';
+        return eval(code);
+    },
+    meta: function(str, env, limit=8) {
+        if (!env) return str;
+        let last;
+        let result = str;
+        while (limit && (last !== result)) {
+            last = result;
+            result = this.expand(last, env);
+            limit--;
+        };
+        return result;
     }
-
 }
 

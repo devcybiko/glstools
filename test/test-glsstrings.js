@@ -15,4 +15,40 @@ describe('testing gls.strings', function () {
         let unsalad = strings.caesar(salad, 12);
         test.value(text).is(unsalad);
     });
+    it('normal expand using backtics', function() {
+        let x = "lovely";
+        let y = "bunch";
+        let result = `I have a ${x} ${y} of coconuts`;
+        test.value("I have a lovely bunch of coconuts").is(result);
+    });
+    it('can expand contexts', function() {
+        let x = "lovely";
+        let y = "bunch";
+        let result = strings.expand("I have a ${x} ${y} of coconuts", {x: "smelly", y:"lot"});
+        test.value("I have a smelly lot of coconuts").is(result);
+    });
+    it('can expand contexts only once', function() {
+        let x = "lovely";
+        let y = "bunch";
+        let result = strings.expand("I have a ${x} ${y} of coconuts", {x: "very ${z}", y:"lot", z:"really ${a}", a: "smelly"});
+        test.value("I have a very ${z} lot of coconuts").is(result);
+    });
+    it('but meta expands contexts within contexts', function() {
+        let x = "lovely";
+        let y = "bunch";
+        let result = strings.meta("I have a ${x} ${y} of coconuts", {x: "very ${z}", y:"lot", z:"really ${a}", a: "smelly"});
+        test.value("I have a very really smelly lot of coconuts").is(result);
+    });
+    it('and meta expands circular references but within limits to prevent stack overflow', function() {
+        let x = "lovely";
+        let y = "bunch";
+        let result = strings.meta("I have a ${x} ${y} of coconuts", {x: "very ${x}", y:"lot", z:"really ${a}", a: "smelly"}, 4);
+        test.value("I have a very very very very ${x} lot of coconuts").is(result);
+    });
+    it('and meta expands long circular references but within limits to prevent stack overflow', function() {
+        let x = "lovely";
+        let y = "bunch";
+        let result = strings.meta("I have a ${x} ${y} of coconuts", {x: "very ${z}", y:"lot", z:"really ${a}", a: "smelly ${x}"}, 8);
+        test.value("I have a very really smelly very really smelly very really ${a} lot of coconuts").is(result);
+    });
 });
