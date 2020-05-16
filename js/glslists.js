@@ -114,9 +114,8 @@ module.exports = {
         dbg.end();
         return t;
     },
-    _macroInclude(i, lines, params) {
+    _macroInclude(i, lines, fname) {
         let cwd = this._cwd[this._cwd.length-1];
-        let fname = strings.meta(params);
         let includedLines = gfile.readList(fname, this._env[this._env.length-1]);
         lines.splice(i, 1, ...includedLines);
     },

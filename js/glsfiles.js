@@ -69,7 +69,7 @@ module.exports = {
      * read a text file as one long string
      */
     read: function (_fname, env = {}) {
-        let fname = this.expandFname(_fname, env);
+        let fname = this.findFname(_fname, env);
         let text = "";
         try {
             text = fs.readFileSync(fname).toString('utf-8');
@@ -83,7 +83,7 @@ module.exports = {
      * read all the filenames and directory-names (excluding . and ..)
      */
     readDir: function (_dirname, theFilter = (fname => fname[0] !== '.'), env) {
-        let dirname = this.expandFname(_dirname, env);
+        let dirname = this.findFname(_dirname, env);
         return fs.readdirSync(dirname).filter(theFilter);
     },
 
@@ -164,7 +164,7 @@ module.exports = {
         let paths = pathString.split(":");
         return paths;
     },
-    findFname: function (paths = [""], fname, extensions = [""]) {
+    searchFnamePaths: function (paths = [""], fname, extensions = [""]) {
         let result = fname;
         for (let path of paths) {
             for (let ext of extensions) {
@@ -208,7 +208,7 @@ module.exports = {
      *      and will return the first file it finds
      *      or 'afname' if it finds none of them
      */
-    expandFname: function (afname, env = {}) {
+    findFname: function (afname, env = {}) {
         let fname = strings.replaceAll(afname, "~", "${HOME}");
         fname = strings.meta(fname, env);
         let colon = fname.lastIndexOf(':');
@@ -225,7 +225,7 @@ module.exports = {
             for (let ext of exts) {
                 extensions.push('.' + ext);
             }
-            let result = this.findFname(paths, newBasename, extensions);
+            let result = this.searchFnamePaths(paths, newBasename, extensions);
             return result ? result : afname;
         }
     }
