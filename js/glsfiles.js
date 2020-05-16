@@ -66,28 +66,6 @@ module.exports = {
     },
 
     /**
-     * read a text file as one long string
-     */
-    read: function (_fname, env = {}) {
-        let fname = this.findFname(_fname, env);
-        let text = "";
-        try {
-            text = fs.readFileSync(fname).toString('utf-8');
-        } catch (ex) {
-            // do nothing
-        }
-        return text;
-    },
-
-    /**
-     * read all the filenames and directory-names (excluding . and ..)
-     */
-    readDir: function (_dirname, theFilter = (fname => fname[0] !== '.'), env) {
-        let dirname = this.findFname(_dirname, env);
-        return fs.readdirSync(dirname).filter(theFilter);
-    },
-
-    /**
      * read a text file as a JSON object
      */
     readJSON: function (fname, env) {
@@ -95,6 +73,7 @@ module.exports = {
         let json = JSON.parse(text);
         return json;
     },
+
     /**
      * read a text file as a JSONC (JSON w/ comments) object
      * WARNING: Doesn't like http://urls.... (because of //)
@@ -121,51 +100,106 @@ module.exports = {
         let json = JSON.parse(result || '{}');
         return json;
     },
+
+    /**
+     * read all the filenames and directory-names (excluding ., .., and hidden files beginning with .)
+     */
+    readDir: function (_dirname, theFilter = (dirname => dirname[0] !== '.'), env) {
+        let dirname = this.findFname(_dirname, env);
+        if (!dirname) return null;
+
+        return fs.readdirSync(dirname).filter(theFilter);
+    },
+
+    /**
+     * read a text file as one long string
+     * returns null if the file cannot be found
+     */
+    read: function (_fname, env = {}) {
+        let fname = this.findFname(_fname, env);
+        if (fname === null) return null;
+
+        let text = "";
+        try {
+            text = fs.readFileSync(fname).toString('utf-8');
+        } catch (ex) {
+            // do nothing
+        }
+        return text;
+    },
+
     /**
      * write an array of strings to a text file
+     * returns the name of the file written
+     * returns null if there is an error
      */
-    writeList: function (fname, list) {
-        this.write(fname, list.join('\n'));
+    writeList: function (fname, list, env) {
+        return this.write(fname, list.join('\n'), env);
     },
 
     /**
      * write a string directly to a text file
      * create the fully-qualified directory if it doesn't exist
+     * returns the name of the file if successful
+     * returns null if there is an error
      */
-    write: function (fname, str) {
+    write: function (_fname, str, env = process.env) {
+        let fname = this.expandFname(_fname, env);
+        if (fname === null) return null;
+
         let lastSlash = fname.lastIndexOf('/');
         if (lastSlash > -1) {
             dirname = fname.substring(0, lastSlash);
-            this.createDir(dirname);
+            this.createDir(dirname, env);
         }
         let buffer = new Buffer.from(str);
         let fd = fs.openSync(fname, 'w');
         fs.writeSync(fd, buffer, 0, buffer.length, null);
         fs.closeSync(fd);
+        return fname;
     },
+
     /**
       * create an empty file and all associated directories
+      * returns the created file or null on error
       */
-    create: function (fname) {
-        this.write(fname, '');
+    create: function (_fname, env) {
+        return this.write(_fname, '', env);
     },
 
     /**
      * recursively create all associated directories
      */
-    createDir: function (dirname) {
+    createDir: function (_dirname, env) {
+        let dirname = this.expandFname(_dirname, env);
+        if (dirname === null) return null;
+
         if (!fs.existsSync(dirname)) {
             fs.mkdirSync(dirname, { recursive: true }, err => {
                 if (err) throw err;
             });
         }
+        return dirname;
     },
-    parsePath: function (pathString) {
+
+    parsePath: function (_pathString, env) {
+        let pathString = this.expandFname(_pathString, env);
+        if (pathString === null) return [];
         let paths = pathString.split(":");
         return paths;
     },
+
+    expandFname: function (_fname, env = process.env) {
+        let fname = strings.replaceAll(_fname, "~", "${HOME}");
+        fname = strings.meta(fname, env);
+        if (fname.includes("$") || fname.includes("{") || fname.includes("}")) {
+            fname = null;
+        }
+        return fname;
+    },
+
     searchFnamePaths: function (paths = [""], fname, extensions = [""]) {
-        let result = fname;
+        let result = null;
         for (let path of paths) {
             for (let ext of extensions) {
                 if (path && !path.endsWith("/")) path += "/";
@@ -178,6 +212,7 @@ module.exports = {
         }
         return result;
     },
+
     /**
      * expands filenames of the form
      * ${PATH):basename${EXT}
@@ -206,27 +241,32 @@ module.exports = {
      *              /home/greg/include/mylibs.inc
      *              /home/greg/include/mylibs.macro
      *      and will return the first file it finds
-     *      or 'afname' if it finds none of them
+     *      or null if it cannot find one
      */
-    findFname: function (afname, env = {}) {
-        let fname = strings.replaceAll(afname, "~", "${HOME}");
-        fname = strings.meta(fname, env);
+
+    findFname: function (_fname, env = process.env) {
+        let fname = this.expandFname(_fname);
+        if (fname === null) return null;
+
         let colon = fname.lastIndexOf(':');
         if (colon === -1) return fname;
         let path = fname.substring(0, colon);
-        let paths = this.parsePath(path);
+        let paths = this.parsePath(path, null);
+
         let basename = fname.substring(colon + 1);
+
         let dot = basename.indexOf('.');
         let extensions = [];
-        if (dot !== -1 && dot !== 0) {
+        if (dot !== -1 || dot !== 0) { // we don't look for hidden files
             let newBasename = basename.substring(0, dot);
-            let exts = basename.substring(dot+1);
+            let exts = basename.substring(dot + 1);
             exts = exts.split('.');
             for (let ext of exts) {
                 extensions.push('.' + ext);
             }
-            let result = this.searchFnamePaths(paths, newBasename, extensions);
-            return result ? result : afname;
+            basename = newBasename;
         }
+        let result = this.searchFnamePaths(paths, basename, extensions);
+        return result
     }
 }
