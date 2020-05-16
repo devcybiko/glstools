@@ -245,7 +245,7 @@ module.exports = {
      */
 
     findFname: function (_fname, env = process.env) {
-        let fname = this.expandFname(_fname);
+        let fname = this.expandFname(_fname, env);
         if (fname === null) return null;
 
         let colon = fname.lastIndexOf(':');

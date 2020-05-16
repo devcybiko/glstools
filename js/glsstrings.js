@@ -42,7 +42,7 @@ module.exports = {
         code += 'return `'+str+'`;})()';
         return eval(code);
     },
-    meta: function(str, env, limit=8) {
+    meta: function(str, env=process.env, limit=8) {
         if (!env) return str;
         let last;
         let result = str;
