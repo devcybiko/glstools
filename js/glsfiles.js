@@ -143,7 +143,7 @@ module.exports = {
      * returns the name of the file if successful
      * returns null if there is an error
      */
-    write: function (_fname, str, env = process.env) {
+    write: function (_fname, str, env) {
         let fname = this.expandFname(_fname, env);
         if (fname === null) return null;
 
@@ -189,7 +189,7 @@ module.exports = {
         return paths;
     },
 
-    expandFname: function (_fname, env = process.env) {
+    expandFname: function (_fname, env) {
         let fname = strings.replaceAll(_fname, "~", "${HOME}");
         fname = strings.meta(fname, env);
         if (fname.includes("$") || fname.includes("{") || fname.includes("}")) {
@@ -244,7 +244,7 @@ module.exports = {
      *      or null if it cannot find one
      */
 
-    findFname: function (_fname, env = process.env) {
+    findFname: function (_fname, env) {
         let fname = this.expandFname(_fname, env);
         if (fname === null) return null;
 

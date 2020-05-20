@@ -34,17 +34,21 @@ module.exports = {
     },
     expand: function(str, env) {
         if (!env) return str;
-        let code = "(function(){";
-        for(let key of Object.keys(env)) {
-            let val = env[key];
-            code += `let ${key} = "${val}";\n`;
+        let result = "";
+        let pattern = /\$\{(.*?)\}/gm;
+        let matches = str.matchAll(pattern);
+        let last = 0;
+        for(let match of matches) {
+            result += str.substring(last, match.index);
+            result += env[match[1]];
+            last = match.index + match[0].length;
         }
-        code += 'return `'+str+'`;})()';
-        return eval(code);
+        result += str.substring(last);
+        return result;
     },
-    meta: function(str, env=process.env, limit=8) {
+    meta: function(str, env, limit=8) {
         if (!env) return str;
-        let last;
+        let last = null;
         let result = str;
         while (limit && (last !== result)) {
             last = result;
@@ -54,4 +58,3 @@ module.exports = {
         return result;
     }
 }
-

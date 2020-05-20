@@ -18,7 +18,7 @@ module.exports = {
         return this._escapeChars[c];
     },
     var: function(c) {
-        return ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_".indexOf(c) !== -1);
+        return ("01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_".indexOf(c) !== -1);
     },
     upper: function(s) {
         return s[0].toUpperCase() === s;

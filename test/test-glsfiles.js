@@ -23,16 +23,16 @@ Line three #last line`;
     it('can read a file as regex', function () {
         let regex = files.readRegExp('test/glsfiles-test02.txt');
         let expected = [/foo/i, /bar/i, /^.*Greg.*Smith$/i];
-        for(let i=0; i<regex.length; i++) {
+        for (let i = 0; i < regex.length; i++) {
             test.value(regex[i]).is(expected[i]);
         }
     });
     it('can read a file as csv', function () {
         let csv = files.readCSV('test/glsfiles-test03.txt');
         let expected = [
-            {col1:'a1',col2:' a2',col3:' a3'}, 
-            {col1:'b1',col2:' b2',col3:' b3'}, 
-            {col1:'c1',col2:' c2',col3:' c3'}];
+            { col1: 'a1', col2: ' a2', col3: ' a3' },
+            { col1: 'b1', col2: ' b2', col3: ' b3' },
+            { col1: 'c1', col2: ' c2', col3: ' c3' }];
         test.value(csv).is(expected);
     });
     it('can read a file as json', function () {
@@ -60,8 +60,8 @@ Line three #last line`;
         
         Line three #last line`;
         files.write(testFile, expected);
-        let lines = files.read(testFile); 
-        test.value(lines).is(expected);  
+        let lines = files.read(testFile);
+        test.value(lines).is(expected);
     });
     it('can write an array of strings to a file', function () {
         let testFile = `/tmp/test.txt`;
@@ -70,14 +70,14 @@ Line three #last line`;
         
         Line three #last line`.split("\n");
         files.writeList(testFile, expected);
-        let lines = files.readList(testFile); 
-        test.value(lines).is(expected);  
+        let lines = files.readList(testFile);
+        test.value(lines).is(expected);
     });
     it('can create an empty file', function () {
         let testFile = `/tmp/test.txt`;
         files.create(testFile);
-        let lines = files.read(testFile); 
-        test.value(lines).is("");  
+        let lines = files.read(testFile);
+        test.value(lines).is("");
     });
     it('can create a folder and read it', function () {
         let testFile = `/tmp/glsfiles/testdir`;
@@ -92,12 +92,11 @@ Line three #last line`;
     });
     it('can find a file', function () {
         let testPath = ".:./test:./js:";
-        let paths = files.parsePath(testPath);
-        let indexjs = files.findFname(paths, 'index.js');
+        let indexjs = files.findFname(testPath + 'index.js');
         test.value(indexjs).is("./index.js");
-        let testglsfilesjs = files.findFname(paths, 'test-glsfiles.js');
+        let testglsfilesjs = files.findFname(testPath + 'test-glsfiles.js');
         test.value(testglsfilesjs).is("./test/test-glsfiles.js");
-        let glscharsjs = files.findFname(paths, 'glschars.js');
+        let glscharsjs = files.findFname(testPath + 'glschars.js');
         test.value(glscharsjs).is("./js/glschars.js");
     });
 });
