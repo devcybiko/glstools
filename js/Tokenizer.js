@@ -6,9 +6,9 @@ class Tokenizer {
     constructor(s) {
         this._sb = new StringBuffer(s);
         this._cursor = 0;
-        this.WORD = /\w/;
+        this.WORD = /\w|[.]/;
         this.SPACE = /\s/;
-        this.TERMINALS = "()!@#$%^&*{}[]|\\?/>.<,\"'";
+        this.TERMINALS = "(:)!@#$%^&*{}[]|\\?/>.<,\"'";
     }
     unget(inc = -1) {
         this._cursor = this._sb.bound(this._cursor + inc);
@@ -52,21 +52,22 @@ class Tokenizer {
         if (type === "object" && pattern.constructor.name === "RegExp") return target.match(pattern);
         throw "Uknown pattern of type='" + pattern.constructor.name + "'";
     }
-    nextToken(pattern = this.WORD, skip = this.SPACE) {
-        let me = "nextToken";
+    next(pattern = this.WORD, skip = this.SPACE) {
+        let me = "next";
         //console.log({me, pattern, skip});
         let c;
-        let token = "";
+        let token = null;
         if (skip) this.skip(skip);
         c = this.nextChar();
+        if (this.matches(this.TERMINALS, c)) return c;
         //console.log({me, c});
         while (c != null) {
             //console.log({me, token, c});
             if (!this.matches(pattern, c)) {
                 this.unget();
                 break;
-            }
-            token += c;
+            } else if (this)
+            token = (token || "") + c;
             c = this.nextChar();
         }
         return token;
@@ -74,7 +75,7 @@ class Tokenizer {
 
 }
 
-function test1() {
+function test2() {
     let p = new Parser("   token1  token2 token3 \n token4  ");
     for (let token = p.nextToken();
         token;
@@ -89,7 +90,16 @@ function test1() {
     }
 }
 
-test1() {
-    let s = "(a:b, (c:d, e:f, g:h), )";
-    
+function test1(s) {
+    let p = new Tokenizer(s);
+    for(let token = p.next();
+        token;
+        token = p.next()) {
+            console.log(token);
+    }
+}
+
+// test1("(alpha:beta, (gamma:delta, epsilon:fragrau, gemini:halcion), )");
+// test1("   token1  token2 token3 \n token4  ");
+
 module.exports = Tokenizer;
