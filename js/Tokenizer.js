@@ -4,7 +4,6 @@ class Tokenizer {
     constructor(s) {
         this._sb = new StringBuffer(s);
         this._cursor = 0;
-<<<<<<< HEAD
         this._line = 1;
         this._context = [
             { _quote1: /^"$/, _end: '"'},
@@ -23,11 +22,6 @@ class Tokenizer {
             { spaces: /^\s+$/ },
             { terminal: /^[^\s\w\d]$/ },
         ]
-=======
-        this.WORD = /\w|[.]/;
-        this.SPACE = /\s/;
-        this.TERMINALS = "(:)!@#$%^&*{}[]|\\?/>.<,\"'";
->>>>>>> d4a4dc99788e4a5eb2d0134c2a6ade914d28cddd
     }
     unget(inc = -1) {
         this._cursor = this._sb.bound(this._cursor + inc);
@@ -82,7 +76,6 @@ class Tokenizer {
         }
         return null;
     }
-<<<<<<< HEAD
     next() {
         let me = "next";
         //console.log({me, pattern, skip});
@@ -104,24 +97,6 @@ class Tokenizer {
                     break;
             }
             lastValue = {name: match.name, value: match.value};
-=======
-    next(pattern = this.WORD, skip = this.SPACE) {
-        let me = "next";
-        //console.log({me, pattern, skip});
-        let c;
-        let token = null;
-        if (skip) this.skip(skip);
-        c = this.nextChar();
-        if (this.matches(this.TERMINALS, c)) return c;
-        //console.log({me, c});
-        while (c != null) {
-            //console.log({me, token, c});
-            if (!this.matches(pattern, c)) {
-                this.unget();
-                break;
-            } else if (this)
-            token = (token || "") + c;
->>>>>>> d4a4dc99788e4a5eb2d0134c2a6ade914d28cddd
             c = this.nextChar();
         }
         if (c && lastValue === null) {
@@ -130,16 +105,9 @@ class Tokenizer {
         return lastValue;
     }
 }
-
-<<<<<<< HEAD
 function test1() {
     let p = new Tokenizer("   token1  token2 token3 \n token4  ");
     for (let token = p.next();
-=======
-function test2() {
-    let p = new Parser("   token1  token2 token3 \n token4  ");
-    for (let token = p.nextToken();
->>>>>>> d4a4dc99788e4a5eb2d0134c2a6ade914d28cddd
         token;
         token = p.next()) {
         console.log(token);
@@ -158,7 +126,6 @@ function test2() {
         \`this \\is \\nthe name of the other baker\`, 
         'this is another quoted string', (charlie:delta, \nepsilon:faragon, garligon:harligon), )`;
     let p = new Tokenizer(s);
-
     for (let token = p.next();
         token;
         token = p.next()) {
@@ -166,21 +133,7 @@ function test2() {
     }
 }
 
-<<<<<<< HEAD
 test1();
 test2();
-=======
-function test1(s) {
-    let p = new Tokenizer(s);
-    for(let token = p.next();
-        token;
-        token = p.next()) {
-            console.log(token);
-    }
-}
-
-// test1("(alpha:beta, (gamma:delta, epsilon:fragrau, gemini:halcion), )");
-// test1("   token1  token2 token3 \n token4  ");
->>>>>>> d4a4dc99788e4a5eb2d0134c2a6ade914d28cddd
 
 module.exports = Tokenizer;
