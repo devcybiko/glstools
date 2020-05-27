@@ -1,0 +1,29 @@
+function test() {
+    let sb = new StringBuffer("0123456789");
+    console.log(sb.toString());
+    for(var [i, c] = sb.next(0);
+        c;
+        [i, c] = sb.next(i)) {
+            console.log(c);
+    }
+    console.log({i, c})
+    console.log(sb.inBounds(i));
+    sb.set(5,'-');
+    for(i=0; i<sb.length(); i++) {
+        console.log(sb.get(i));
+    }
+    sb.set(i,'-');
+    console.log({i, c})
+    console.log(sb.inBounds(i));
+    sb.append("ABC");
+    console.log(sb.toString());
+    let s = sb.substring(3,5);
+    console.log(s);
+    s = sb.substring(3,-1);
+    console.log(s);
+    s = sb.substring(0,-12);
+    console.log(s);
+    let xb = sb.substr(3,-1);
+    console.log(""+xb);
+}
+// test();

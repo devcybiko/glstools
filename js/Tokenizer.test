@@ -1,0 +1,31 @@
+function test1() {
+    let p = new Tokenizer("   token1  token2 token3 \n token4  ");
+    for (let token = p.next();
+        token;
+        token = p.next()) {
+        console.log(token);
+    }
+    console.log();
+}
+
+function test2() {
+    let s = `(1 1. 1.e 1.- 1.e3 1.E+ 1.3E6 1.3E-6 
+        007 007bond 150 $ % [baker is 00the name of the baker], 
+        // this is a comment
+        /****
+         *  this is a block comment
+         * this is line two
+         * this is the end of the block comment ******/ 
+        \`this \\is \\nthe name of the other baker\`, 
+        'this is another quoted string', (charlie:delta, \nepsilon:faragon, garligon:harligon), )`;
+    let p = new Tokenizer(s);
+    for (let token = p.next();
+        token;
+        token = p.next()) {
+        if (token.name !== 'spaces') console.log(token.value);
+    }
+}
+
+// test1();
+// test2();
+

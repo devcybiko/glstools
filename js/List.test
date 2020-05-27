@@ -1,0 +1,84 @@
+
+function test3() {
+    let l = null;
+    l = List.parse(`
+    (
+        key1: value1
+        key2: value2
+    )
+    `);
+    console.log("'" + l.toString() + "'");
+
+    l = List.parse(`
+    (   key1: value1
+    key2: value2
+    )
+    `);
+    console.log("'" + l.toString() + "'");
+
+    l = List.parse(`
+    (
+        key: value
+        key1: (
+            key2:value2
+        )
+    )
+    `);
+    console.log("'" + l.toString() + "'");
+
+    let txt = `(
+        0: value0 \\\\
+        key1 : (
+            key2: [class:foo, action:bar("string"\\, "value");, text:This is a test, color:RED]    
+            key5 : (
+                key6 : value6, and more
+                key_number_7:   \\
+                        value_7 plus more stuff
+            )
+        )
+        key!@#8: the final value of 8!
+    )
+    `;
+    console.log(txt);
+    l = List.parse(txt);
+    console.log("'" + t.toString() + "'");
+    let serialized = t.toString();
+    let deserialized = List.parse(serialized);
+    console.log(deserialized.toString());
+
+    t.visit(entry => { console.log(entry.key) });
+    //t.visit(entry => {console.log(entry.key, entry.value.toString()); return entry.key.includes("2")});
+}
+
+function test4() {
+    let s = `(
+        alpha: beta
+        charlie: delta   dawn   what's that flower you have on
+        epsilon: frapsilon for \
+too much fun
+        gamma : (
+            helios : indium
+        )
+        array : [a:b, c: a certain amount of text, e:f, h:i]
+    )`;
+    let list = List.parse(s);
+    console.log(list.toString());
+    console.log();
+    list.visit(foo => console.log(foo));
+}
+
+function test5() {
+    let txt = `(
+            key2: [class:foo, action:bar("string"\\, "value");, text:This is a test, color:RED]    
+    )`;
+    console.log(txt);
+    l = List.parse(txt);
+    console.log("'" + l.toString() + "'");
+    let serialized = l.toString();
+    let deserialized = List.parse(serialized);
+    console.log(deserialized.toString());
+
+}
+// test3();
+test4();
+test5();

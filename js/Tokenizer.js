@@ -1,10 +1,11 @@
+require('magic-globals');
 const StringBuffer = require('./StringBuffer')
 
 class Tokenizer {
     constructor(s) {
         this._sb = new StringBuffer(s);
         this._cursor = 0;
-        this._line = 1;
+        this._line = 0;
         this._context = [
             { _quote1: /^"$/, _end: '"'},
             { _quote2: /^'$/, _end: "'"},
@@ -64,39 +65,52 @@ class Tokenizer {
         return c;
     }
     matches(value) {
+        //console.log(__line, value);
         for (let i = 0; i < this._context.length; i++) {
             let entry = this._context[i];
             let name = Object.keys(entry)[0]; // will this always work?
             let pattern = entry[name];
             let match = value.match(pattern);
-            //console.log({name, match});
             if (match) {
+                //console.log({__line, name, match});
                 return { name, value, entry };
             }
         }
+       //console.log({__line});
         return null;
     }
-    next() {
+    next(escape='\\') {
         let me = "next";
         //console.log({me, pattern, skip});
         let c = this.nextChar();
-        let value = "";
+        let patternValue = "";
+        let realValue = "";
         let lastValue = null;
+        let isEscaped = false;
         while (c) {
             // console.log({c});
-            value += c;
-            let match = this.matches(value);
+            if (c === escape) { // don't include this in the pattern matching this round
+                c = this.nextChar();
+                //console.log({__line, escape, c, value: patternValue});
+                isEscaped = true;
+                realValue += c;
+            } else {
+                patternValue += c;
+                realValue += c;
+            }
+            let match = this.matches(patternValue);
             if (!match) {
+                //console.log({__line, match, value: patternValue});
                 this.unget();
                 break;
             } else if (match.name[0] === '_') { // special concession for quoted strings
                     let name = match.name;
                     let endQuote = match.entry['_end'];
-                    value = this.scanto(value, endQuote);
-                    lastValue =  {name, value};
+                    realValue = this.scanto(realValue, endQuote);
+                    lastValue =  {name, value: realValue};
                     break;
             }
-            lastValue = {name: match.name, value: match.value};
+            lastValue = {name: match.name, value: realValue};
             c = this.nextChar();
         }
         if (c && lastValue === null) {
@@ -105,35 +119,4 @@ class Tokenizer {
         return lastValue;
     }
 }
-function test1() {
-    let p = new Tokenizer("   token1  token2 token3 \n token4  ");
-    for (let token = p.next();
-        token;
-        token = p.next()) {
-        console.log(token);
-    }
-    console.log();
-}
-
-function test2() {
-    let s = `(1 1. 1.e 1.- 1.e3 1.E+ 1.3E6 1.3E-6 
-        007 007bond 150 $ % [baker is 00the name of the baker], 
-        // this is a comment
-        /****
-         *  this is a block comment
-         * this is line two
-         * this is the end of the block comment ******/ 
-        \`this \\is \\nthe name of the other baker\`, 
-        'this is another quoted string', (charlie:delta, \nepsilon:faragon, garligon:harligon), )`;
-    let p = new Tokenizer(s);
-    for (let token = p.next();
-        token;
-        token = p.next()) {
-        if (token.name !== 'spaces') console.log(token.value);
-    }
-}
-
-test1();
-test2();
-
 module.exports = Tokenizer;

@@ -1,8 +1,9 @@
 require('magic-globals');
-const is = require('./glschars');
-const Lexer = require('./Lexer');
+const Tokenizer = require('./Tokenizer');
 const strings = require('./glsstrings');
 
+/**
+ */
 class List {
     constructor(entry) {
         this._list = [];
@@ -22,11 +23,8 @@ class List {
         if (className !== 'Entry') throw "List value may only be an 'Entry'";
         this._list.push(value);
     }
-    get length() {
+    length() {
         return this._list.length;
-    }
-    get list() {
-        return this._list;
     }
 
     /**
@@ -37,8 +35,8 @@ class List {
     visit(callback) {
         for (let entry of this._list) {
             let prune = callback(entry);
-            if (!prune && entry.value.constructor.name === "List") {
-                entry.value.visit(callback);
+            if (!prune && entry.getValue().constructor.name === "List") {
+                entry.getValue().visit(callback);
             }
         }
     }
@@ -63,137 +61,107 @@ class List {
         s += "\n" + indent + ")";
         return s;
     }
+
     static parse(s) {
-        let l = new Lexer(s);
-        let context = {
-            WORDS: /\w/,
-            DIGITS: null,
-            SPACES: /\s/,
-            TERMINALS: "(:)",
-            START_QUOTES: "\n",
-            END_QUOTES: "\n"
-        };
-        let patterns = [
-            { name: "literalString", pattern: /^\n.*\n$/ },
-            { name: "variable", pattern: /^[a-zA-Z_]\w*?$/ },
-            { name: "operator", pattern: /[<>!=.+\-*\/%]/ },
-            { name: "terminator", pattern: "(:)" },
-            { name: "spaces", pattern: /\s/ },
+        let t = new Tokenizer(s);
+        let context = [
+            { _bracketed: /^\[$/, _end: ']' },
+            { term: /^\w+$/ },
+            { spaces: /^\s+$/ },
+            { terminal: /^[^\s\w]$/ },
         ];
-        l.setContext(context);
-        l.setPatterns(patterns);
-        let lexeme = l.next();
-        if (lexeme.token !== '(') throw { msg: "expected '('", lexeme, line: l.getLine() };
-        return List._lpar(l);
+        t.setContext(context);
+        let token = List._next(t);
+        if (token.value !== '(') throw { msg: "expected '('", token, line: t.getLine() };
+        return List._lpar(t);
     }
 
-    static _lpar(l) {
+    static _next(t, spaces = false) {
+        let token = t.next();
+        if (!token || spaces) return token;
+        if (token.name === 'spaces') token = t.next(); // we're assuming you can never return spaces twice in a row
+        return token;
+    }
+
+    static _array(s) {
         let list = new List();
-        for (let lexeme = l.next();
-            lexeme;
-            lexeme = l.next()) {
-            console.log({lexeme});
-            if (lexeme.token === ')') return list;
-            if (lexeme.type === 'spaces') continue;
-            if (lexeme.type !== 'variable') throw { msg: "Expected variable", lexeme, line: l.getLine() };
-            let name = lexeme.token;
-            lexeme = l.next();
-            console.log({name, lexeme});
-            if (lexeme.token !== ':') throw { msg: "Expected colon - did you use '=' instead?", lexeme, line: l.getLine() };
-            let value = l._t.quotedToken("\n").trim();
-            console.log({value});
-            if (value === '(') {
-                value = List._lpar(l);
-            } else if (false && value[0] === '[') {
-                value = List._array(value);
+        s = strings.substring(s, 1, -1);
+        let t = new Tokenizer(s);
+        let context = [
+            { terminal: /^[,:\\]$/ },
+            { term: /^[^,:\\]+$/ },
+        ];
+        t.setContext(context);
+        for(let token = List._next(t);
+            token;
+            token = List._next(t)) {
+                if (token.value === ',') continue;
+                if (token.name != "term") throw {msg: "Expected a term", token};
+                let colon = List._next(t);
+                if (colon === null || colon.value != ':') throw {msg: "Expected a colon", token};
+                let value = List._next(t);
+                if (value === null) throw {msg: "Missing value"};
+                let entry = new Entry(token.value.trim(), value.value.trim());
+                // console.log(entry);
+                list.add(entry);
             }
-            let entry = new Entry(name, value);
-            list.add(entry);
-            console.log(entry);
-        }
-    }
-    static _array(s, lineno=1) {
-        let list = new List();
-        let l = new Lexer(s);
-        let context = {
-            WORDS: /\w/,
-            DIGITS: null,
-            SPACES: /\s/,
-            TERMINALS: "[:,]",
-            START_QUOTES: "\n",
-            END_QUOTES: "\n"
-        };
-        let patterns = [
-            { name: "literalString", pattern: /^\n.*\n$/ },
-            { name: "variable", pattern: /^[a-zA-Z_]\w*?$/ },
-            { name: "operator", pattern: /[<>!=.+\-*\/%]/ },
-            { name: "terminator", pattern: "(:)" },
-            { name: "spaces", pattern: /\s/ },
-        ];
-        l.setContext(context);
-        l.setPatterns(patterns);
-        let lexem = l.next();
-        if (lexeme.token !== '[') throw {msg: "Arrays must be encapsulated by '[' and ']'", line: lineno};
-        for(lexeme = l.next();
-            lexeme;
-            lexeme = l.next()) {
-                if (lexeme.token === ']') return list;
-                if (!lexmem.type === 'variable') throw { msg: "Expected variable", lexeme, line: lineno };
-                let name = lexeme.name;
-                lexeme = l.next();
-                if (lexeme.token !== ':') throw { msg: "Expected colon - did you use '=' instead?", lexeme, line: l.getLine() };
+        return list;
     }
 
+    static _entry(t) {
+        let key = List._next(t);
+        if (key.value === ')') return null;
+        if (key.name !== "term") throw { msg: "Invalid key for Entry", key, line: t.getLine() };
+        let colon = List._next(t);
+        if (colon.value !== ":") throw { msg: "Expected a colon - did you use an = when you meant : ?", colon, line: t.getLine() };
+        let value = t.scanto("", "\n").trim(); // get the rest of the line
+        // console.log({value});
+        if (value === '(') value = List._lpar(t);
+        if (value[0] === '[') value = List._array(value);
+        // console.log({key, value});
+        let entry = new Entry(key.value, value);
+        return entry;
+    }
+
+    static _lpar(t) {
+        let list = new List();
+        for(let entry = List._entry(t);
+            entry;
+            entry = List._entry(t)) {
+                //console.log(entry);
+                list.add(entry);
+        }
+        return list;
+    }
 }
 List.tabs = 0;
 
 class Entry {
     constructor(key, value) {
-        this.key = key;
-        this.value = value;
+        this._key = key;
+        this._value = value;
     }
 
-    static parse(s) {
-        let entry = null;
-        [entry] = Entry._parse(s, 0, 1);
-        return entry;
-    }
-
-    static _parse(s, i = 0, lineno = 1) {
-        let entry = null;
-        let c = null;
-        let key = null;
-        let value = null;
-        [key, c, i, lineno] = Parser._getKey(s, i, lineno);
-        [value, c, i, lineno] = Parser._getValue(s, i, lineno);
-        key = Parser._handleEscape(key); // handle escape charater '\'
-        if (typeof (value) === 'string') value = Parser._handleEscape(value); // handle escape charater '\'
-        // if (key && value) entry = new Entry(key, value);
-        entry = new Entry(key, value);
-        return [entry, i, lineno];
-    }
-
-    get key() {
+    getKey() {
         return this._key;
     }
-    set key(key) {
+    setKey(key) {
         if (typeof (key) !== 'string') {
             throw "Entry key may only be a 'string'";
         }
         this._key = key;
     }
-    get value() {
-
+    getValue() {
         return this._value;
     }
-    set value(value) {
-        console.log({ value });
+    setValue(value) {
+        // console.log({ value });
         let className = value.constructor.name;
         if (className !== 'String' && className !== 'List') throw "Entry value may only be a 'String' or 'List'";
         this._value = value;
     }
-    get escapedValue() {
-        let s = this.value;
+    escapedValue() {
+        let s = this._value;
         let r = "";
         if (typeof (s) !== 'string') return s;
         for (let i = 0; i < s.length; i++) {
@@ -207,114 +175,9 @@ class Entry {
         return r;
     }
     toString() {
-        return `{${this.key}: ${this.escapedValue}}`;
+        // return `{${this._key}: ${this.escapedValue()}}`;
+        return `${this._key}: ${this.escapedValue()}`;
     }
 }
-function test1() {
-    let x = new List();
-    let l = new List();
-
-    let e = new Entry("e", "f");
-    let f = new Entry("f", l);
-    let g = new Entry("g", "h");
-    let h = new Entry("h", "i");
-
-    x.add(e);
-    x.add(f);
-
-    l.add(g);
-    l.add(h);
-
-    for (let i = 0; i < l.length; i++) {
-        let entry = l.get(i);
-        console.log(entry.toString());
-    }
-    for (let i = 0; i < l.length; i++) {
-        let entry = l.get(i);
-        console.log(entry.toString());
-    }
-    console.log("" + x);
-}
-
-function test2() {
-    let e = Entry.parse("   key : value   ");
-    console.log("'" + e.toString() + "'");
-
-    e = Entry.parse("   key : value   \\");
-    console.log("'" + e.toString() + "'");
-    e = Entry.parse("   key : value  \\   \n..."); // this should probably give { key: 'key', value: 'value   ' } not { key: 'key', value: 'value  ' }
-    console.log("'" + e.toString() + "'");
-    e = Entry.parse("   key : value  \\\\    \n...");
-    console.log("'" + e.toString() + "'");
-}
-
-function test3() {
-    let l = null;
-    l = List.parse(`
-    (
-        key1: value1
-        key2: value2
-    )
-    `);
-    console.log("'" + l.toString() + "'");
-
-    l = List.parse(`
-    (   key1: value1
-    key2: value2
-    )
-    `);
-    console.log("'" + l.toString() + "'");
-
-    l = List.parse(`
-    (
-        key: value
-        key1: (
-            key2:value2
-        )
-    )
-    `);
-    console.log("'" + l.toString() + "'");
-
-    let txt = `(
-        key-0: value0 \\\\
-        key(1$) : (
-            key[2]: [class:foo, action:bar("string"\\, "value");, text:This is a test, color:RED]    
-            key5 : (
-                key6 : value6, and more
-                key_number_7:   \\
-                        value_7 plus more stuff
-            )
-        )
-        key!@#8: the final value of 8!
-    )
-    `;
-    l = List.parse(txt);
-    console.log("'" + l.toString() + "'");
-    let serialized = l.toString();
-    let deserialized = List.parse(serialized);
-    console.log(deserialized.toString());
-
-    l.visit(entry => { console.log(entry.key) });
-    //l.visit(entry => {console.log(entry.key, entry.value.toString()); return entry.key.includes("2")});
-}
-
-function test4() {
-    let s = `(
-        alpha: beta
-        charlie: delta   dawn   what's that flower you have on
-        epsilon: frapsilon for \
-too much fun
-        gamma : (
-            helios : indium
-        )
-        array : [a:b, c:d, e:f, h:i]
-    )`;
-    let list = List.parse(s);
-    console.log(list.toString());
-}
-//test1();
-//test2();
-//test3();
-test4();
 
 module.export = { List, Entry };

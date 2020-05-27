@@ -27,7 +27,6 @@ class StringBuffer {
      * @param {*} post 
      */
     bound(i, post=0) {
-        
         if (i >= (this._s.length + post)) return this._s.length - 1 + post;
         if (i < 0) return 0;
         return i;
@@ -40,14 +39,25 @@ class StringBuffer {
         if (!this.inBounds(i)) return null;
         return this._s[i];
     }
+
+    /**
+     * sets the current character or appends
+     */
     set(i, c) {
         if (c.length != 1) return null;
         if (!this.inBounds(i)) return null;
         return this.insert(i, c);
     }
+
+    /**
+     * add s to the end of StringBuffer
+     */
     append(s) {
         return this.insert(this._s.length, s);
     }
+    /**
+     * insert string at point 'i'
+     */
     insert(i, s) {
         if (!this.inBounds(i, 0, 1)) return null;
         let a = this._s.substring(0, i);
@@ -55,12 +65,21 @@ class StringBuffer {
         this._s = a + s + b;
         return this;
     }
+
+    /**
+     * substring on StringBuffer
+     * handles negative 'b' as from the end of the string
+     */
     substring(a,b) {
         if (b < 0) b = this.length() + b + 1;
         a = this.bound(a);
         b = this.bound(b,1);
         return this._s.substring(a,b);
     }
+
+    /**
+     * substring function, but returns a StringBuffer
+     */
     substr(a,b) {
         return new StringBuffer(this.substring(a,b));
     }
@@ -116,33 +135,4 @@ class StringBuffer {
     }
 }
 
-function test() {
-    let sb = new StringBuffer("0123456789");
-    console.log(sb.toString());
-    for(var [i, c] = sb.next(0);
-        c;
-        [i, c] = sb.next(i)) {
-            console.log(c);
-    }
-    console.log({i, c})
-    console.log(sb.inBounds(i));
-    sb.set(5,'-');
-    for(i=0; i<sb.length(); i++) {
-        console.log(sb.get(i));
-    }
-    sb.set(i,'-');
-    console.log({i, c})
-    console.log(sb.inBounds(i));
-    sb.append("ABC");
-    console.log(sb.toString());
-    let s = sb.substring(3,5);
-    console.log(s);
-    s = sb.substring(3,-1);
-    console.log(s);
-    s = sb.substring(0,-12);
-    console.log(s);
-    let xb = sb.substr(3,-1);
-    console.log(""+xb);
-}
-// test();
 module.exports = StringBuffer;
