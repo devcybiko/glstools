@@ -56,5 +56,10 @@ module.exports = {
             limit--;
         };
         return result;
+    },
+    substring: function(str, start=0, end) {
+        if (end < 0) end = str.length + end;
+        let result = str.substring(start, end);
+        return result;
     }
 }

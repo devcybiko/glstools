@@ -1,44 +1,13 @@
 require('magic-globals');
 const is = require('./glschars');
-
+const Lexer = require('./Lexer');
+const strings = require('./glsstrings');
 
 class List {
     constructor(entry) {
         this._list = [];
         if (entry) this.add(entry);
     }
-
-    static parse(s) {
-        let list = null;
-        let c = null;
-        let i = 0;
-        let lineno = 0;
-        let spaces = null;
-        [spaces, c, i, lineno] = Parser._skipSpaces(s, i, lineno, "", false);
-        [list] = List._parse(s, c, i, lineno);
-        return list;
-    }
-
-    static _parse(s, c, i = 0, lineno = 1) {
-        let list = new List();
-        let entry = null;
-        let spaces = null;
-        if (c !== '(') throw `${lineno}: Expected '(' but got '${c}'`;
-        while (c !== ')') {
-            [entry, i, lineno] = Entry._parse(s, i, lineno);
-            if (entry.value === '(') {
-                [entry.value, c, i, lineno] = List._parse(s, '(', i, lineno);
-                list.add(entry);
-                [c, i, lineno] = Parser._nextChar(s, i, lineno, 1); // skip over the ')'
-                [spaces, c, i, lineno] = Parser._skipSpaces(s, i, lineno, "", true); // skip to the next valid character (and reRead it)
-            } else {
-                list.add(entry);
-                [spaces, c, i, lineno] = Parser._skipSpaces(s, i, lineno, "", true); // skip to the next valid character (and reRead it)
-            }
-        }
-        return [list, c, i, lineno];
-    }
-
     get(i) {
         return this._list[i];
     }
@@ -66,7 +35,7 @@ class List {
      * callback(entry) - return TRUE if you want to PRUNE the tree (stop descending)
      */
     visit(callback) {
-        for(let entry of this._list) {
+        for (let entry of this._list) {
             let prune = callback(entry);
             if (!prune && entry.value.constructor.name === "List") {
                 entry.value.visit(callback);
@@ -94,6 +63,87 @@ class List {
         s += "\n" + indent + ")";
         return s;
     }
+    static parse(s) {
+        let l = new Lexer(s);
+        let context = {
+            WORDS: /\w/,
+            DIGITS: null,
+            SPACES: /\s/,
+            TERMINALS: "(:)",
+            START_QUOTES: "\n",
+            END_QUOTES: "\n"
+        };
+        let patterns = [
+            { name: "literalString", pattern: /^\n.*\n$/ },
+            { name: "variable", pattern: /^[a-zA-Z_]\w*?$/ },
+            { name: "operator", pattern: /[<>!=.+\-*\/%]/ },
+            { name: "terminator", pattern: "(:)" },
+            { name: "spaces", pattern: /\s/ },
+        ];
+        l.setContext(context);
+        l.setPatterns(patterns);
+        let lexeme = l.next();
+        if (lexeme.token !== '(') throw { msg: "expected '('", lexeme, line: l.getLine() };
+        return List._lpar(l);
+    }
+
+    static _lpar(l) {
+        let list = new List();
+        for (let lexeme = l.next();
+            lexeme;
+            lexeme = l.next()) {
+            console.log({lexeme});
+            if (lexeme.token === ')') return list;
+            if (lexeme.type === 'spaces') continue;
+            if (lexeme.type !== 'variable') throw { msg: "Expected variable", lexeme, line: l.getLine() };
+            let name = lexeme.token;
+            lexeme = l.next();
+            console.log({name, lexeme});
+            if (lexeme.token !== ':') throw { msg: "Expected colon - did you use '=' instead?", lexeme, line: l.getLine() };
+            let value = l._t.quotedToken("\n").trim();
+            console.log({value});
+            if (value === '(') {
+                value = List._lpar(l);
+            } else if (false && value[0] === '[') {
+                value = List._array(value);
+            }
+            let entry = new Entry(name, value);
+            list.add(entry);
+            console.log(entry);
+        }
+    }
+    static _array(s, lineno=1) {
+        let list = new List();
+        let l = new Lexer(s);
+        let context = {
+            WORDS: /\w/,
+            DIGITS: null,
+            SPACES: /\s/,
+            TERMINALS: "[:,]",
+            START_QUOTES: "\n",
+            END_QUOTES: "\n"
+        };
+        let patterns = [
+            { name: "literalString", pattern: /^\n.*\n$/ },
+            { name: "variable", pattern: /^[a-zA-Z_]\w*?$/ },
+            { name: "operator", pattern: /[<>!=.+\-*\/%]/ },
+            { name: "terminator", pattern: "(:)" },
+            { name: "spaces", pattern: /\s/ },
+        ];
+        l.setContext(context);
+        l.setPatterns(patterns);
+        let lexem = l.next();
+        if (lexeme.token !== '[') throw {msg: "Arrays must be encapsulated by '[' and ']'", line: lineno};
+        for(lexeme = l.next();
+            lexeme;
+            lexeme = l.next()) {
+                if (lexeme.token === ']') return list;
+                if (!lexmem.type === 'variable') throw { msg: "Expected variable", lexeme, line: lineno };
+                let name = lexeme.name;
+                lexeme = l.next();
+                if (lexeme.token !== ':') throw { msg: "Expected colon - did you use '=' instead?", lexeme, line: l.getLine() };
+    }
+
 }
 List.tabs = 0;
 
@@ -117,7 +167,7 @@ class Entry {
         [key, c, i, lineno] = Parser._getKey(s, i, lineno);
         [value, c, i, lineno] = Parser._getValue(s, i, lineno);
         key = Parser._handleEscape(key); // handle escape charater '\'
-        if (typeof(value) === 'string') value = Parser._handleEscape(value); // handle escape charater '\'
+        if (typeof (value) === 'string') value = Parser._handleEscape(value); // handle escape charater '\'
         // if (key && value) entry = new Entry(key, value);
         entry = new Entry(key, value);
         return [entry, i, lineno];
@@ -137,6 +187,7 @@ class Entry {
         return this._value;
     }
     set value(value) {
+        console.log({ value });
         let className = value.constructor.name;
         if (className !== 'String' && className !== 'List') throw "Entry value may only be a 'String' or 'List'";
         this._value = value;
@@ -144,8 +195,8 @@ class Entry {
     get escapedValue() {
         let s = this.value;
         let r = "";
-        if (typeof(s) !== 'string') return s;
-        for(let i=0; i<s.length; i++) {
+        if (typeof (s) !== 'string') return s;
+        for (let i = 0; i < s.length; i++) {
             let c = s[i];
             if (c === '\\') {
                 r += c + c;
@@ -156,124 +207,9 @@ class Entry {
         return r;
     }
     toString() {
-        return `${this.key}: ${this.escapedValue}`;
+        return `{${this.key}: ${this.escapedValue}}`;
     }
 }
-
-class Parser {
-    static _handleEscape(s) {
-        let r = "";
-        for (let i = 0; i < s.length; i++) {
-            let c = s[i];
-            if (c === '\\') c = s[++i] || '';
-            r += c;
-        }
-        return r;
-    }
-    static _ungetChar(s, i, lineno) {
-        let c = s[i];
-        if (c === '\n') lineno--;
-        if (0 < i) {
-            i--;
-            if (0 < i) c = s[i-1];
-        }
-        return [c, i, lineno];
-    }
-    static _nextChar(s, i, lineno) {
-        let c = null;
-        if (0 <= i && i < s.length) {
-            c = s[i++];
-        }
-        if (c === '\n') lineno++;
-        return [c, i, lineno];
-    }
-    static _skipSpaces(s, i, lineno, terminators = "", reReadLastChar = false) { // skip spaces and return terminator
-        let spaces = null;
-        let c = null;
-        let dummy = null;
-        [c, i, lineno] = Parser._nextChar(s, i, lineno, 1);
-        while (c) {
-            if (terminators.includes(c)) break;
-            if (!is.space(c)) break;
-            spaces += c;
-            [c, i, lineno] = Parser._nextChar(s, i, lineno, 1);
-        }
-        // if (!returnChar) [c, i, lineno] = Parser._ungetChar(s, i, lineno);
-        if (reReadLastChar) [dummy, i, lineno] = [dummy, i, lineno] = Parser._ungetChar(s, i, lineno, 1);
-        return [spaces, c, i, lineno];
-    }
-    static _getKey(s, i, lineno) {
-        let key = "";
-        let c = null;
-        let spaces = null;
-        [spaces, c, i, lineno] = Parser._skipSpaces(s, i, lineno, "", false);
-        while (c) {
-            if (c === ":" || is.space(c)) break;
-            if (true) key += c;
-            // if (is.var(c)) key += c;
-            else throw `${lineno}: Bad character '${c}'`;
-            [c, i, lineno] = Parser._nextChar(s, i, lineno);
-        }
-        key = key.trim();
-        if (is.space(c)) [spaces, c, i, lineno] = Parser._skipSpaces(s, i, lineno, "\n", false);
-        if (c !== ':') throw `${lineno}: Key '${key}' expected ':', got '${c}'`;
-        return [key, c, i, lineno];
-    }
-    static _getValue(s, i, lineno) {
-        let value = "";
-        let c = null;
-        let spaces = null;
-        let lastChar = null;
-        [spaces, c, i, lineno] = Parser._skipSpaces(s, i, lineno, "\n", false);
-        while (c) {
-            if (c === '\\') {
-                [c, i, lineno] = Parser._nextChar(s, i, lineno);
-                if (c === '\n') {
-                    [c, i, lineno] = Parser._nextChar(s, i, lineno); // ignore \ at end of line, combining two lines
-                    continue;
-                }
-                c = '\\' + c; // pass the \x characters trough
-            }
-            if (c === '\n') break;
-            value += c;
-            [c, i, lineno] = Parser._nextChar(s, i, lineno);
-        }
-        value = value.trim();
-        if (value[0] === '[' && value.slice(-1) === ']') value = Parser._parseArray(value.slice(1, -1), lineno);
-        else if (value[0] === '[') throw `${lineno}: Cannot begin value with '[' (check for multiline error, or consider escaping with '\\')`;
-        return [value, c, i, lineno];
-    }
-    static _parseArray(value, lineno) {
-        let s = value;
-        let i = 0;
-        let c = null;
-        let term = "";
-        let list = new List();
-        let last = i;
-        [c, i, lineno] = Parser._nextChar(s, i, lineno);
-        while(c) {
-            if (c === '\\') { //
-                [c, i, lineno] = Parser._nextChar(s, i, lineno);
-                [c, i, lineno] = Parser._nextChar(s, i, lineno);
-            } else if (c === Parser.SEP) {
-                term = s.substring(last, i-1);
-                let [entry] = Entry._parse(term, 0, lineno);
-                list.add(entry);
-                [c, i, lineno] = Parser._nextChar(s, i, lineno);
-                last = i;
-            } else {
-                [c, i, lineno] = Parser._nextChar(s, i, lineno);
-            }
-        }
-        term = s.substring(last, i);
-
-        let [entry] = Entry._parse(term, 0, lineno);
-        list.add(entry);
-        return list;
-    }
-}
-Parser.SEP = ",";
-
 function test1() {
     let x = new List();
     let l = new List();
@@ -327,7 +263,7 @@ function test3() {
     key2: value2
     )
     `);
-    console.log("'"+l.toString()+"'");
+    console.log("'" + l.toString() + "'");
 
     l = List.parse(`
     (
@@ -337,7 +273,7 @@ function test3() {
         )
     )
     `);
-    console.log("'"+l.toString()+"'");
+    console.log("'" + l.toString() + "'");
 
     let txt = `(
         key-0: value0 \\\\
@@ -358,12 +294,27 @@ function test3() {
     let deserialized = List.parse(serialized);
     console.log(deserialized.toString());
 
-    l.visit(entry => {console.log(entry.key)});
+    l.visit(entry => { console.log(entry.key) });
     //l.visit(entry => {console.log(entry.key, entry.value.toString()); return entry.key.includes("2")});
 }
 
+function test4() {
+    let s = `(
+        alpha: beta
+        charlie: delta   dawn   what's that flower you have on
+        epsilon: frapsilon for \
+too much fun
+        gamma : (
+            helios : indium
+        )
+        array : [a:b, c:d, e:f, h:i]
+    )`;
+    let list = List.parse(s);
+    console.log(list.toString());
+}
 //test1();
 //test2();
-test3();
+//test3();
+test4();
 
-module.export = {List, Entry, Parser};
+module.export = { List, Entry };
