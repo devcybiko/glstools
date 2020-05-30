@@ -1,13 +1,14 @@
 require('magic-globals');
 const Tokenizer = require('./Tokenizer');
+const Entry = require('./Entry');
 const strings = require('./glsstrings');
 
 /**
  */
 class List {
-    constructor(entry) {
+    constructor(key, value) {
         this._list = [];
-        if (entry) this.add(entry);
+        if (key) this.add(key, value);
     }
     get(i) {
         return this._list[i];
@@ -18,10 +19,16 @@ class List {
         if (className !== 'Entry') throw "List value may only be an 'Entry'";
         this._list[i] = value;
     }
-    add(value) {
+    add(key, value) {
+        if (value === undefined) { // single param - key is an entry
+            value = key;
+        } else {
+            value = new Entry(key, value);
+        }
         let className = value.constructor.name;
         if (className !== 'Entry') throw "List value may only be an 'Entry'";
         this._list.push(value);
+        return this;
     }
     length() {
         return this._list.length;
@@ -76,16 +83,17 @@ class List {
         return List._lpar(t);
     }
 
-    static _next(t, spaces = false) {
-        let token = t.next();
+    static _next(t, spaces = false, escape) {
+        let token = t.next(escape);
         if (!token || spaces) return token;
-        if (token.name === 'spaces') token = t.next(); // we're assuming you can never return spaces twice in a row
+        if (token.name === 'spaces') token = t.next(escape); // we're assuming you can never return spaces twice in a row
         return token;
     }
 
     static _array(s) {
         let list = new List();
         s = strings.substring(s, 1, -1);
+        s = strings.replaceAll(s, /[\\]/, "\\\\"); // some kind of f'd up. need to double-up escapes
         let t = new Tokenizer(s);
         let context = [
             { terminal: /^[,:\\]$/ },
@@ -96,10 +104,13 @@ class List {
             token;
             token = List._next(t)) {
                 if (token.value === ',') continue;
-                if (token.name != "term") throw {msg: "Expected a term", token};
+                if (token.name != "term") throw {msg: "Expected a term", token, line: t.getLine()};
+                // ({token});
                 let colon = List._next(t);
-                if (colon === null || colon.value != ':') throw {msg: "Expected a colon", token};
+                // console.log({colon});
+                if (colon === null || colon.value != ':') throw {msg: "Expected a colon", token, line: t.getLine()};
                 let value = List._next(t);
+                // console.log({value});
                 if (value === null) throw {msg: "Missing value"};
                 let entry = new Entry(token.value.trim(), value.value.trim());
                 // console.log(entry);
@@ -136,48 +147,4 @@ class List {
 }
 List.tabs = 0;
 
-class Entry {
-    constructor(key, value) {
-        this._key = key;
-        this._value = value;
-    }
-
-    getKey() {
-        return this._key;
-    }
-    setKey(key) {
-        if (typeof (key) !== 'string') {
-            throw "Entry key may only be a 'string'";
-        }
-        this._key = key;
-    }
-    getValue() {
-        return this._value;
-    }
-    setValue(value) {
-        // console.log({ value });
-        let className = value.constructor.name;
-        if (className !== 'String' && className !== 'List') throw "Entry value may only be a 'String' or 'List'";
-        this._value = value;
-    }
-    escapedValue() {
-        let s = this._value;
-        let r = "";
-        if (typeof (s) !== 'string') return s;
-        for (let i = 0; i < s.length; i++) {
-            let c = s[i];
-            if (c === '\\') {
-                r += c + c;
-            } else {
-                r += c;
-            }
-        }
-        return r;
-    }
-    toString() {
-        // return `{${this._key}: ${this.escapedValue()}}`;
-        return `${this._key}: ${this.escapedValue()}`;
-    }
-}
-
-module.export = { List, Entry };
+module.exports = List;

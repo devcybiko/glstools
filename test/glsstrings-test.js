@@ -51,4 +51,10 @@ describe('testing gls.strings', function () {
         let result = strings.meta("I have a ${x} ${y} of coconuts", {x: "very ${z}", y:"lot", z:"really ${a}", a: "smelly ${x}"}, 8);
         test.value("I have a very really smelly very really smelly very really ${a} lot of coconuts").is(result);
     });
+    it('substring uses negative end values', function() {
+        let s = "This is a test";
+        let expected = "This is a ";
+        let result = strings.substring(s, 0, -4);
+        test.value(expected).is(result);
+    });
 });

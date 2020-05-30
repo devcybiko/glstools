@@ -47,10 +47,10 @@ _cwd: an array of current working directories
     lists._cwd.pop();
 */
 
-const is = require('./glschars');
-const dbg = require('./glsdebug');
-const gfile = require('./glsfiles');
-const strings = require('./glsstrings');
+const is = require('../js/glschars');
+const dbg = require('../js/glsdebug');
+const gfile = require('../js/glsfiles');
+const strings = require('../js/glsstrings');
 
 dbg.off();
 // dbg.set(dbg.VERBOSE)

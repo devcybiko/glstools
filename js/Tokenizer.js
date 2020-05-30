@@ -48,20 +48,26 @@ class Tokenizer {
     setChar(c) {
         return this._sb.set(this._cursor, c);
     }
-    scanto(startquote, endquote) {
+    scanto(startquote, endquote, escape) {
         let value = startquote;
-        for (let c = this.nextChar();
+        for (let c = this.nextChar(escape);
             c;
-            c = this.nextChar()) {
+            c = this.nextChar(escape)) {
             value += c;
             if (value.endsWith(endquote)) break;
         }
         return value;
     }
-    nextChar() {
+    nextChar(escape='\\') {
         let [i, c] = this._sb.next(this._cursor);
-        this._cursor = i;
+        if (c === escape) {
+            [i, c] = this._sb.next(i); // get the next character
+            if (c === '\n') [i, c] = this._sb.next(i); // swallow backslash - newline
+            else if (c === 'n') c = '\n'; // convert backslash - n to newline
+            // console.log({c});
+        } 
         if (c === '\n') this._line++;
+        this._cursor = i;
         return c;
     }
     matches(value) {
@@ -106,7 +112,7 @@ class Tokenizer {
             } else if (match.name[0] === '_') { // special concession for quoted strings
                     let name = match.name;
                     let endQuote = match.entry['_end'];
-                    realValue = this.scanto(realValue, endQuote);
+                    realValue = this.scanto(realValue, endQuote, escape);
                     lastValue =  {name, value: realValue};
                     break;
             }
