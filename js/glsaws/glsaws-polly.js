@@ -34,7 +34,7 @@ function setConfig(theConfig) {
     if (typeof theConfig === 'string') {
         let voices = theConfig.split(",");
         config.voiceID = voices[0] || 'Matthew';
-        config.engine = voices[1] || 'neural'; 
+        config.engine = voices[1] || 'neural';
         config.rate = voices[2] || '115%';
         config.newsBoolean = (voices[3] || 'true') === 'true';
     } else {
@@ -88,14 +88,12 @@ function pollySSML(s, theConfig = config) {
 
 
 async function pollySpeakRaw$(outfname, params) {
-    console.log(params);
-
-    await Polly.synthesizeSpeech(params, (err, data) => {
-        if (err) throw err;
+    let promise = Polly.synthesizeSpeech(params).promise();
+    await promise.then(function (data) {
         if (!data) throw "polly failed to return data";
         if (!data.AudioStream instanceof Buffer) throw "polly returnd something other than a Buffer";
         fs.writeFileSync(outfname, data.AudioStream); // note: may throw its own exception
-    });
+    }); // errors should be thrown and caught upstream
 }
 
 async function pollySpeakSSML$(outfname, ssml, theConfig = config) {
