@@ -115,7 +115,7 @@ module.exports = {
      * read a text file as one long string
      * returns null if the file cannot be found
      */
-    read: function (_fname, env = {}) {
+    read: function (_fname, env = process.env) {
         let fname = this.findFname(_fname, env);
         if (fname === null) return null;
 
@@ -143,7 +143,7 @@ module.exports = {
      * returns the name of the file if successful
      * returns null if there is an error
      */
-    write: function (_fname, str, env) {
+    write: function (_fname, str, env = process.env) {
         let fname = this.expandFname(_fname, env);
         if (fname === null) return null;
 

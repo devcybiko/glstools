@@ -42,6 +42,9 @@ class Tokenizer {
     getLine() {
         return this._line;
     }
+    setLine(line) {
+        this._line = line;
+    }
     getChar() {
         return this._sb.get(this._cursor);
     }
@@ -111,7 +114,7 @@ class Tokenizer {
                 break;
             } else if (match.name[0] === '_') { // special concession for quoted strings
                     let name = match.name;
-                    let endQuote = match.entry['_end'];
+                    let endQuote = match.entry['end_'];
                     realValue = this.scanto(realValue, endQuote, escape);
                     lastValue =  {name, value: realValue};
                     break;
