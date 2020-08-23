@@ -7,12 +7,23 @@ let Polly = new AWS.Polly({
     region: 'us-east-1'
 });
 
+// Salli, Female (adolescent)
+// Joanna, Female (alexa)
+// Ivy, Female (child?)
+// Kendra, Female (senior)
+// Kimberly, Female (senior high pitched)
+// Kevin, Male (adolescent, neural only)
+// Matthew, Male (adult)
+// Justin, Male (child)
+// Joey, Male (adult)
+
 let config = {
-    rate: "100%", // ignored if newsBoolean = false;
-    voiceID: 'Matthew',
-    beforeBreakTime: "1s",
-    afterBreakTime: "1s",
-    newsBoolean: true,
+    rate: "100%",
+    voiceID: 'Joanna',
+    beforeBreakTime: null, // "1s", etc...
+    afterBreakTime: null,
+    newsBoolean: false,
+    engine: null // "neural", "standard", overrides newsBoolean
 };
 
 function getPolly() {
@@ -20,7 +31,15 @@ function getPolly() {
 }
 
 function setConfig(theConfig) {
-    config = theConfig;
+    if (typeof theConfig === 'string') {
+        let voices = theConfig.split(",");
+        config.voiceID = voices[0] || 'Matthew';
+        config.engine = voices[1] || 'neural'; 
+        config.rate = voices[2] || '115%';
+        config.newsBoolean = (voices[3] || 'true') === 'true';
+    } else {
+        config = theConfig;
+    }
 }
 
 function getConfig() {
@@ -81,6 +100,8 @@ async function pollySpeakRaw$(outfname, params) {
 
 async function pollySpeakSSML$(outfname, ssml, theConfig = config) {
     let engine = theConfig.newsBoolean ? "neural" : "standard";
+    if (config.engine) engine = config.engine;
+
     let params = {
         'Text': ssml,
         'TextType': 'ssml',
@@ -91,9 +112,9 @@ async function pollySpeakSSML$(outfname, ssml, theConfig = config) {
     await pollySpeakRaw$(outfname, params);
 }
 
-async function pollySpeak$(text, outfname, theConfig = config) {
+async function pollySpeak$(outfname, text, theConfig = config) {
     let ssml = pollySSML(text, theConfig);
-    await pollySpeakSSML$(ssml, outfname, theConfig)
+    await pollySpeakSSML$(outfname, ssml, theConfig)
 }
 
 module.exports = {
