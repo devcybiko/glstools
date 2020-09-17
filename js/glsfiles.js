@@ -104,11 +104,19 @@ module.exports = {
     /**
      * read all the filenames and directory-names (excluding ., .., and hidden files beginning with .)
      */
-    readDir: function (_dirname, theFilter = (dirname => dirname[0] !== '.'), env) {
+    readDir: function (_dirname, theFilter = (dirname => dirname[0] !== '.'), env, isfullname=false) {
         let dirname = this.findFname(_dirname, env);
         if (!dirname) return null;
+        let fnames = fs.readdirSync(dirname).filter(theFilter);
+        if (isfullname) {
+            let fullnames = []
+            for(let fname of fnames) {
+                fullnames.push(path.join(dirname, fname);
+            }
+            fnames = fullnames;
+        }
+        return fnames;
 
-        return fs.readdirSync(dirname).filter(theFilter);
     },
 
     /**
@@ -135,6 +143,15 @@ module.exports = {
      */
     writeList: function (fname, list, env) {
         return this.write(fname, list.join('\n'), env);
+    },
+
+    /**
+     * write an array of strings to a text file
+     * returns the name of the file written
+     * returns null if there is an error
+     */
+    writeJSON: function (fname, obj, env) {
+        return this.write(fname, JSON.stringify(obj, null, 2), env);
     },
 
     /**

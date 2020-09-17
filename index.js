@@ -9,5 +9,6 @@ const StringBuffer = require('./js/StringBuffer');
 const Tokenizer = require('./js/Tokenizer');
 const List = require('./js/List');
 const Entry = require('./js/Entry');
+const mmap = require('./js/mmap/index.js);
 
-module.exports = {files, strings, procs, maths, chars, debug, aws, StringBuffer, Tokenizer, List, Entry};
+module.exports = {mmap, files, strings, procs, maths, chars, debug, aws, StringBuffer, Tokenizer, List, Entry};

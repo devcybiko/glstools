@@ -1,6 +1,6 @@
 {
   "name": "glstools",
-  "version": "1.2.4",
+  "version": "1.2.6",
   "description": "",
   "emain": "js/index.js",
   "scripts": {

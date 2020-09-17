@@ -40,7 +40,12 @@ module.exports = {
         let last = 0;
         for(let match of matches) {
             result += str.substring(last, match.index);
-            result += env[match[1]];
+            let exp = env[match[1]];
+            if (exp) {
+                result += exp;
+            } else {
+                result += match[0];
+            }
             last = match.index + match[0].length;
         }
         result += str.substring(last);
