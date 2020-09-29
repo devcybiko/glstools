@@ -111,7 +111,7 @@ module.exports = {
         if (isfullname) {
             let fullnames = []
             for(let fname of fnames) {
-                fullnames.push(path.join(dirname, fname);
+                fullnames.push(path.join(dirname, fname));
             }
             fnames = fullnames;
         }

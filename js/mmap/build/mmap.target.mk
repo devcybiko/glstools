@@ -4,12 +4,20 @@ TOOLSET := target
 TARGET := mmap
 DEFS_Debug := \
 	'-DNODE_GYP_MODULE_NAME=mmap' \
+	'-DUSING_UV_SHARED=1' \
+	'-DUSING_V8_SHARED=1' \
+	'-DV8_DEPRECATION_WARNINGS=1' \
+	'-DV8_DEPRECATION_WARNINGS' \
+	'-DV8_IMMINENT_DEPRECATION_WARNINGS' \
 	'-D_DARWIN_USE_64_BIT_INODE=1' \
 	'-D_LARGEFILE_SOURCE' \
 	'-D_FILE_OFFSET_BITS=64' \
+	'-DOPENSSL_NO_PINSHARED' \
+	'-DOPENSSL_THREADS' \
 	'-DBUILDING_NODE_EXTENSION' \
 	'-DDEBUG' \
-	'-D_DEBUG'
+	'-D_DEBUG' \
+	'-DV8_ENABLE_CHECKS'
 
 # Flags passed to all source files.
 CFLAGS_Debug := \
@@ -28,10 +36,10 @@ CFLAGS_C_Debug := \
 
 # Flags passed to only C++ files.
 CFLAGS_CC_Debug := \
-	-std=gnu++0x \
+	-std=gnu++1y \
+	-stdlib=libc++ \
 	-fno-rtti \
 	-fno-exceptions \
-	-fno-threadsafe-statics \
 	-stdlib=libc++ \
 	-Wall \
 	-mmacosx-version-min=10.9
@@ -43,21 +51,31 @@ CFLAGS_OBJC_Debug :=
 CFLAGS_OBJCC_Debug :=
 
 INCS_Debug := \
-	-I/Users/greg/.node-gyp/5.12.0/include/node \
-	-I/Users/greg/.node-gyp/5.12.0/src \
-	-I/Users/greg/.node-gyp/5.12.0/deps/uv/include \
-	-I/Users/greg/.node-gyp/5.12.0/deps/v8/include
+	-I/Users/greg/Library/Caches/node-gyp/14.11.0/include/node \
+	-I/Users/greg/Library/Caches/node-gyp/14.11.0/src \
+	-I/Users/greg/Library/Caches/node-gyp/14.11.0/deps/openssl/config \
+	-I/Users/greg/Library/Caches/node-gyp/14.11.0/deps/openssl/openssl/include \
+	-I/Users/greg/Library/Caches/node-gyp/14.11.0/deps/uv/include \
+	-I/Users/greg/Library/Caches/node-gyp/14.11.0/deps/zlib \
+	-I/Users/greg/Library/Caches/node-gyp/14.11.0/deps/v8/include
 
 DEFS_Release := \
 	'-DNODE_GYP_MODULE_NAME=mmap' \
+	'-DUSING_UV_SHARED=1' \
+	'-DUSING_V8_SHARED=1' \
+	'-DV8_DEPRECATION_WARNINGS=1' \
+	'-DV8_DEPRECATION_WARNINGS' \
+	'-DV8_IMMINENT_DEPRECATION_WARNINGS' \
 	'-D_DARWIN_USE_64_BIT_INODE=1' \
 	'-D_LARGEFILE_SOURCE' \
 	'-D_FILE_OFFSET_BITS=64' \
+	'-DOPENSSL_NO_PINSHARED' \
+	'-DOPENSSL_THREADS' \
 	'-DBUILDING_NODE_EXTENSION'
 
 # Flags passed to all source files.
 CFLAGS_Release := \
-	-Os \
+	-O3 \
 	-gdwarf-2 \
 	-mmacosx-version-min=10.9 \
 	-arch x86_64 \
@@ -72,10 +90,10 @@ CFLAGS_C_Release := \
 
 # Flags passed to only C++ files.
 CFLAGS_CC_Release := \
-	-std=gnu++0x \
+	-std=gnu++1y \
+	-stdlib=libc++ \
 	-fno-rtti \
 	-fno-exceptions \
-	-fno-threadsafe-statics \
 	-stdlib=libc++ \
 	-Wall \
 	-mmacosx-version-min=10.9
@@ -87,10 +105,13 @@ CFLAGS_OBJC_Release :=
 CFLAGS_OBJCC_Release :=
 
 INCS_Release := \
-	-I/Users/greg/.node-gyp/5.12.0/include/node \
-	-I/Users/greg/.node-gyp/5.12.0/src \
-	-I/Users/greg/.node-gyp/5.12.0/deps/uv/include \
-	-I/Users/greg/.node-gyp/5.12.0/deps/v8/include
+	-I/Users/greg/Library/Caches/node-gyp/14.11.0/include/node \
+	-I/Users/greg/Library/Caches/node-gyp/14.11.0/src \
+	-I/Users/greg/Library/Caches/node-gyp/14.11.0/deps/openssl/config \
+	-I/Users/greg/Library/Caches/node-gyp/14.11.0/deps/openssl/openssl/include \
+	-I/Users/greg/Library/Caches/node-gyp/14.11.0/deps/uv/include \
+	-I/Users/greg/Library/Caches/node-gyp/14.11.0/deps/zlib \
+	-I/Users/greg/Library/Caches/node-gyp/14.11.0/deps/v8/include
 
 OBJS := \
 	$(obj).target/$(TARGET)/mmap.o
@@ -124,27 +145,33 @@ $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.cpp FORCE_DO_CMD
 LDFLAGS_Debug := \
 	-stdlib=libc++ \
 	-undefined dynamic_lookup \
+	-Wl,-no_pie \
 	-Wl,-search_paths_first \
 	-mmacosx-version-min=10.9 \
 	-arch x86_64 \
-	-L$(builddir)
+	-L$(builddir) \
+	-stdlib=libc++
 
 LIBTOOLFLAGS_Debug := \
 	-stdlib=libc++ \
 	-undefined dynamic_lookup \
+	-Wl,-no_pie \
 	-Wl,-search_paths_first
 
 LDFLAGS_Release := \
 	-stdlib=libc++ \
 	-undefined dynamic_lookup \
+	-Wl,-no_pie \
 	-Wl,-search_paths_first \
 	-mmacosx-version-min=10.9 \
 	-arch x86_64 \
-	-L$(builddir)
+	-L$(builddir) \
+	-stdlib=libc++
 
 LIBTOOLFLAGS_Release := \
 	-stdlib=libc++ \
 	-undefined dynamic_lookup \
+	-Wl,-no_pie \
 	-Wl,-search_paths_first
 
 LIBS := \
