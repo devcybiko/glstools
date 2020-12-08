@@ -3,7 +3,7 @@ module.exports = {
         return !src.split("").some(ch => restricted.indexOf(ch) !== -1);
     },
     replaceAll: function (target, search, replacement) {
-        return target.replace(new RegExp(search, 'g'), replacement);
+        return target.replace(new RegExp(search, 'gm'), replacement);
     },
 
     // Caesar shift by Evan Hahn (evanhahn.com)
@@ -66,5 +66,8 @@ module.exports = {
         if (end < 0) end = str.length + end;
         let result = str.substring(start, end);
         return result;
+    },
+    indexOf: function(str, c) {
+        return str.indexOf(c) + 1;
     }
 }
