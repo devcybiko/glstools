@@ -10,5 +10,6 @@ const Tokenizer = require('./js/Tokenizer');
 const List = require('./js/List');
 const Entry = require('./js/Entry');
 const mmap = require('./js/mmap/index.js');
+const objects = require('./js/glsobjects.js');
 
-module.exports = {mmap, files, strings, procs, maths, chars, debug, aws, StringBuffer, Tokenizer, List, Entry};
+module.exports = {objects, mmap, files, strings, procs, maths, chars, debug, aws, StringBuffer, Tokenizer, List, Entry};

@@ -213,6 +213,7 @@ module.exports = {
     },
 
     expandFname: function (_fname, env) {
+        if (typeof _fname !== "string" ) return null;
         let fname = strings.replaceAll(_fname, "~", "${HOME}");
         fname = strings.meta(fname, env);
         if (fname.includes("$") || fname.includes("{") || fname.includes("}")) {

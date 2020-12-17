@@ -21,7 +21,10 @@ module.exports = {
 
     args: function(optionString) {
         let options = optionString.split(",");
-        let result = {};
+        let result = {files:[]};
+        for(let i=0; i<options.length; i++) {
+            result[options[i].substring(1)] = [];
+        }
         for(let i=2; i<process.argv.length; i++) {
             let arg = process.argv[i];
             let words = arg.split("=");
@@ -33,9 +36,8 @@ module.exports = {
                  value = option;
                  option = "files";
              }
-            let list = result[option] || [];
+            let list = result[option];
             list.push(value);
-            result[option] = list;
         }
         return result;
     }
