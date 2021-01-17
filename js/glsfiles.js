@@ -233,6 +233,7 @@ module.exports = {
                     break;
                 }
             }
+            if (result) break;
         }
         return result;
     },
@@ -276,9 +277,7 @@ module.exports = {
         if (colon === -1) return fname;
         let path = fname.substring(0, colon);
         let paths = this.parsePath(path, null);
-
         let basename = fname.substring(colon + 1);
-
         let dot = basename.indexOf('.');
         let extensions = [];
         if (dot !== -1 || dot !== 0) { // we don't look for hidden files
