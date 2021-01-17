@@ -1,4 +1,3 @@
-require('magic-globals');
 const StringBuffer = require('./StringBuffer')
 
 class Tokenizer {
