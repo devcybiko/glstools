@@ -78,7 +78,7 @@ module.exports = {
         for (let key of Object.keys(options)) {
             let opt = options[key];
             if (opt.required && !results[opt.name]) results._errors.push(`Missing required option: ${key}`);
-            if (!results[opt.name] && opt.defaultValue) results[opt.name] = [opt.defaultValue]; // add in the default values that you did not supply
+            if (!results[opt.name] && opt.defaultValue !== true) results[opt.name] = [opt.defaultValue]; // add in the default values that you did not supply
         }
 
         // check for required parms
@@ -96,7 +96,7 @@ function trimOption(option) {
     let required = false;
     let optionName = option;
     let name = option;
-    if (name[0] !== '-') this.die("options must start with a dash (-)");
+    if (name[0] !== '-') this.die("options must start with a dash (-) " + name);
     name = name.substring(1); // trim off the leading dash
     if (name[0] === '-') name = name.substring(1); // trim off the second leading dash
     if (name[name.length - 1] === '*') {
@@ -123,6 +123,7 @@ function parseOptions(optionString) {
     let options = {};
     let optionList = optionString.split(",");
     for (let optionItem of optionList) {
+        if (optionItem === "") continue;
         let hasEquals = optionItem.indexOf("=") !== -1;
         let words = optionItem.split("=", 2);
         let optionDefinition = words[0];
