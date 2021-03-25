@@ -1,14 +1,26 @@
 const fs = require('fs');
 const strings = require('./glsstrings');
 
+let options = {
+    throwOnError: false
+}
+
+function throwOrNull(ex) {
+    if (options.throwOnError) throw ex;
+    else return null;
+}
+
 module.exports = {
+    set: function(name, value) {
+        options[name] = value;
+    },
     /**
      * simplistic CSV reader
      * @param {} pagesCSVFname
      */
     readCSV: function (pagesCSVFname, env) {
         let lines = this.readScript(pagesCSVFname, env);
-        if (lines === null) return null;
+        if (lines === null) return throwOrNull("readCSV: invalid CSV fname: " + pagesCSVFname);
         let header = [];
         let rows = [];
         for (const i in lines) {
@@ -31,7 +43,7 @@ module.exports = {
     // and converts each line to a regexp
     readRegExp: function (fname, env) {
         let lines = this.readScript(fname, env);
-        if (lines === null) return null;
+        if (lines === null) return throwOrNull("readRegExp: infavlid fname: " + fname);
         let rows = [];
         for (const line of lines) {
             let regexp = new RegExp(line, 'i');
@@ -46,7 +58,7 @@ module.exports = {
      */
     readScript: function (fname, env) {
         let lines = this.readList(fname, env);
-        if (lines === null) return null;
+        if (lines === null) ;
         let rows = [];
         for (let line of lines) {
             let pound = line.indexOf('#');
@@ -64,7 +76,7 @@ module.exports = {
      */
     readList: function (fname, env) {
         let text = this.read(fname, env);
-        if (text === null) return null;
+        if (text === null) return throwOrNull("readList: invalid fname: " + fname);
         let textByLine = text.split('\n');
         return textByLine;
     },
@@ -74,7 +86,7 @@ module.exports = {
      */
     readJSON: function (fname, env) {
         let text = this.read(fname, env);
-        if (text === null) return null;
+        if (text === null) return throwOrNull("readJSON: invalid fname: " + fname);
         let json = JSON.parse(text);
         return json;
     },
@@ -85,7 +97,7 @@ module.exports = {
      */
     readJSONC: function (fname, env) {
         let lines = this.readList(fname, env);
-        if (lines === null) return null;
+        if (lines === null) return throwOrNull("readJSONC: invalid fname: " + fname);
         for (let i = 0; i < lines.length; i++) {
             let jsonLine = lines[i];
             let index;
@@ -112,7 +124,7 @@ module.exports = {
      */
     readDir: function (_dirname, theFilter = (dirname => dirname[0] !== '.'), env, isfullname=false) {
         let dirname = this.findFname(_dirname, env);
-        if (!dirname) return null;
+        if (!dirname) return throwOrNull("readDir: invalid _dirname: " + _dirname);
         let fnames = fs.readdirSync(dirname).filter(theFilter);
         if (isfullname) {
             let fullnames = []
@@ -131,13 +143,13 @@ module.exports = {
      */
     read: function (_fname, env = process.env) {
         let fname = this.findFname(_fname, env);
-        if (fname === null) return null;
+        if (fname === null) return throwOrNull("read: invalid _fname: " + _fname);
 
         let text = "";
         try {
             text = fs.readFileSync(fname).toString('utf-8');
         } catch (ex) {
-            return null;
+            return throwOrNull(ex);
         }
         return text;
     },
@@ -168,7 +180,7 @@ module.exports = {
      */
     write: function (_fname, str, env = process.env) {
         let fname = this.expandFname(_fname, env);
-        if (fname === null) return null;
+        if (fname === null) return throwOrNull("write: invalid fname: " + fname);
 
         let lastSlash = fname.lastIndexOf('/');
         if (lastSlash > -1) {
@@ -195,7 +207,7 @@ module.exports = {
      */
     createDir: function (_dirname, env) {
         let dirname = this.expandFname(_dirname, env);
-        if (dirname === null) return null;
+        if (dirname === null) return throwOrNull("createDir: invalid _dirname: " + _dirname);
 
         if (!fs.existsSync(dirname)) {
             fs.mkdirSync(dirname, { recursive: true }, err => {
@@ -213,7 +225,7 @@ module.exports = {
     },
 
     expandFname: function (_fname, env) {
-        if (typeof _fname !== "string" ) return null;
+        if (typeof _fname !== "string" ) return throwOrNull("expandFname: invalid _fname: " + _fname);
         let fname = strings.replaceAll(_fname, "~", "${HOME}");
         fname = strings.meta(fname, env);
         if (fname.includes("$") || fname.includes("{") || fname.includes("}")) {
@@ -271,7 +283,7 @@ module.exports = {
 
     findFname: function (_fname, env) {
         let fname = this.expandFname(_fname, env);
-        if (fname === null) return null;
+        if (fname === null) return throwOrNull("findFname: invalid _fname: " + _fname);
 
         let colon = fname.lastIndexOf(':');
         if (colon === -1) return fname;

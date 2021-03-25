@@ -11,5 +11,6 @@ const List = require('./js/List');
 const Entry = require('./js/Entry');
 //const mmap = require('./js/mmap/index.js');
 const objects = require('./js/glsobjects.js');
+const gex = require('./js/gexlib.js');
 
-module.exports = {objects, files, strings, procs, maths, chars, debug, aws, StringBuffer, Tokenizer, List, Entry};
+module.exports = {gex, objects, files, strings, procs, maths, chars, debug, aws, StringBuffer, Tokenizer, List, Entry};
