@@ -2,7 +2,9 @@ const fs = require('fs');
 const strings = require('./glsstrings');
 
 let options = {
-    throwOnError: false
+    throwOnError: false,
+    expandFilename: true,
+    searchFilename: true,
 }
 
 function throwOrNull(ex) {
@@ -11,8 +13,11 @@ function throwOrNull(ex) {
 }
 
 module.exports = {
-    set: function(name, value) {
-        options[name] = value;
+    getOptions: function() {
+        return options;
+    },
+    setOptions: function(_options) {
+        options = _options;
     },
     /**
      * simplistic CSV reader
@@ -225,6 +230,7 @@ module.exports = {
     },
 
     expandFname: function (_fname, env) {
+        if (!options.expandFilename) return _fname;
         if (typeof _fname !== "string" ) return throwOrNull("expandFname: invalid _fname: " + _fname);
         let fname = strings.replaceAll(_fname, "~", "${HOME}");
         fname = strings.meta(fname, env);
@@ -235,6 +241,7 @@ module.exports = {
     },
 
     searchFnamePaths: function (paths = [""], fname, extensions = [""]) {
+        if (!options.searchFilename) return fname;
         let result = null;
         for (let path of paths) {
             for (let ext of extensions) {
@@ -283,6 +290,7 @@ module.exports = {
 
     findFname: function (_fname, env) {
         let fname = this.expandFname(_fname, env);
+        if (!options.searchFilenames) return fname;
         if (fname === null) return throwOrNull("findFname: invalid _fname: " + _fname);
 
         let colon = fname.lastIndexOf(':');
