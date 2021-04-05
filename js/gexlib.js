@@ -18,7 +18,7 @@ function __ignore(s, end="") {
     return end;
 }
 
-function __include(fname, fs, fe, __parms={}) {
+function __include(fname, fs, fe, __parms={}, __depth=16) {
     for(let __key of Object.keys(__parms)) {
         let __value = __parms[__key];
         eval(`${__key}=${JSON.stringify(__value)}`);
@@ -31,7 +31,7 @@ function __include(fname, fs, fe, __parms={}) {
     __Fe.push(fe);
     let __text = __gfiles.read("${includePath}:"+fname, __env);
     if (__text === null) __die(`ERROR: could not read file "${__currfile.pop()} from file "${__currfile.pop()}" with include path: "${__env.includePath}"`, 1);
-    let result = __expand(__text, fs, fe);
+    let result = __expand(__text, fs, fe, __parms, __depth);
     __currfile.pop();
     __Fs.pop();
     __Fe.pop();
@@ -50,7 +50,8 @@ function __insert(fname) {
 }
 
 
-function __expand(__text, fs, fe, __parms={}) {
+function __expand(__text, fs, fe, __parms={},__depth=16) {
+    if (__depth === 0) return __text;
     if (typeof __text !== "string") return "";
     for(let __key of Object.keys(__parms)) {
         let __value = __parms[__key];
@@ -68,7 +69,7 @@ function __expand(__text, fs, fe, __parms={}) {
             __expr = __match[1];
             __value = eval(__expr);
             if (__value === undefined) throw new Error("Undefined Result upon eval()");
-            if (__expr.substring(0,2) !== "__") __value = __expand(__value, fs, fe); // expand the result if it's not a directive
+            if (__expr.substring(0,2) !== "__") __value = __expand(__value, fs, fe, __parms, __depth-1); // expand the result if it's not a directive
         } catch(error) {
             console.error(error);
             __value = undefined;
