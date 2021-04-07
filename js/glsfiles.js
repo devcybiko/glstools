@@ -222,6 +222,15 @@ module.exports = {
         return dirname;
     },
 
+    /**
+     * check to see if a file exists
+     */
+    exists: function (_fname, env) {
+        let fname = this.expandFname(_fname, env);
+        if (fname === null) return throwOrNull("createDir: invalid _fname: " + _fname);
+        return fs.existsSync(fname);
+    },
+
     parsePath: function (_pathString, env) {
         let pathString = this.expandFname(_pathString, env);
         if (pathString === null) return [];
