@@ -164,8 +164,8 @@ module.exports = {
      * returns the name of the file written
      * returns null if there is an error
      */
-    writeList: function (fname, list, env) {
-        return this.write(fname, list.join('\n'), env);
+    writeList: function (fname, list, env, mode) {
+        return this.write(fname, list.join('\n'), env, mode);
     },
 
     /**
@@ -173,8 +173,8 @@ module.exports = {
      * returns the name of the file written
      * returns null if there is an error
      */
-    writeJSON: function (fname, obj, env) {
-        return this.write(fname, JSON.stringify(obj, null, 2), env);
+    writeJSON: function (fname, obj, env, mode) {
+        return this.write(fname, JSON.stringify(obj, null, 2), env, mode);
     },
 
     /**
@@ -183,7 +183,7 @@ module.exports = {
      * returns the name of the file if successful
      * returns null if there is an error
      */
-    write: function (_fname, str, env = process.env) {
+    write: function (_fname, str, env = process.env, mode="w") {
         let fname = this.expandFname(_fname, env);
         if (fname === null) return throwOrNull("write: invalid fname: " + fname);
 
@@ -193,7 +193,7 @@ module.exports = {
             this.createDir(dirname, env);
         }
         let buffer = new Buffer.from(str);
-        let fd = fs.openSync(fname, 'w');
+        let fd = fs.openSync(fname, mode);
         fs.writeSync(fd, buffer, 0, buffer.length, null);
         fs.closeSync(fd);
         return fname;
