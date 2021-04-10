@@ -79,6 +79,7 @@ module.exports = {
         }
         let diff = ok / maxcnt;
         return diff >= threshold;
+    },
     indexOf: function(str, c) {
         return str.indexOf(c) + 1;
     }

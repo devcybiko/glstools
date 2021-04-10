@@ -19,9 +19,4 @@ module.exports = {
 const objects = require('./js/glsobjects.js');
 const gex = require('./js/gexlib.js');
 
-<<<<<<< HEAD
 module.exports = {gex, objects, files, strings, procs, maths, chars, debug, aws, StringBuffer, Tokenizer, List, Entry};
-=======
-module.exports = {objects, files, strings, procs, maths, chars, debug, aws, StringBuffer, Tokenizer, List, Entry};
->>>>>>> 389eaab325512dfaab04b3e1337d8a4b5eadcc38
->>>>>>> e36b2d16b1ca3b8879ab820c1552137b1709a5c8
