@@ -67,7 +67,6 @@ module.exports = {
         let result = str.substring(start, end);
         return result;
     },
-<<<<<<< HEAD
     tochar: function(s = "") {
         return s.length ? s.charCodeAt(0) : undefined;
     },
@@ -80,9 +79,7 @@ module.exports = {
         }
         let diff = ok / maxcnt;
         return diff >= threshold;
-=======
     indexOf: function(str, c) {
         return str.indexOf(c) + 1;
->>>>>>> 389eaab325512dfaab04b3e1337d8a4b5eadcc38
     }
 }
