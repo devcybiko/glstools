@@ -66,5 +66,18 @@ module.exports = {
         if (end < 0) end = str.length + end;
         let result = str.substring(start, end);
         return result;
+    },
+    tochar: function(s = "") {
+        return s.length ? s.charCodeAt(0) : undefined;
+    },
+    istext: function(s="", threshold=1.0) {
+        let ok = 0;
+        let maxcnt = Math.min(s.length, 1000) || 1;
+        for (let i = 0; i < maxcnt; i++) {
+            let c = this.tochar(s[i]);
+            if ((31 < c && c < 128) || c == 9 || c == 10 || c == 13) ok++
+        }
+        let diff = ok / maxcnt;
+        return diff >= threshold;
     }
 }

@@ -10,5 +10,8 @@ const Tokenizer = require('./js/Tokenizer');
 const List = require('./js/List');
 const Entry = require('./js/Entry');
 const mmap = require('./js/mmap/index.js');
-
-module.exports = {mmap, files, strings, procs, maths, chars, debug, aws, StringBuffer, Tokenizer, List, Entry};
+const arrays = require('./js/glsarrays.js');
+module.exports = {
+    arrays, mmap, files, strings, procs, maths, chars, debug, aws, 
+    StringBuffer, Tokenizer, List, Entry
+};

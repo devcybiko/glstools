@@ -11,19 +11,22 @@ module.exports = {
         '"': '\"',
         '\\': '\\'
     },
-    space : function(c) {
+    isspace : function(c = "") {
         return /\s/.test(c)
     },
-    escapeable: function(c) {
+    isescape: function(c = "") {
         return this._escapeChars[c];
     },
-    var: function(c) {
+    isvar: function(c = "") {
         return ("01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_".indexOf(c) !== -1);
     },
-    upper: function(s) {
-        return s[0].toUpperCase() === s;
+    isupper: function(s = "") {
+        return s.length && s[0].toUpperCase() === s;
     },
-    lower: function(s) {
-        return s[0].toLowerCase() === s;
+    islower: function(s = "") {
+        return s.length && s[0].toLowerCase() === s;
+    },
+    tochar: function(s = "") {
+        return s.length ? s.charCodeAt(0) : undefined;
     }
 }
