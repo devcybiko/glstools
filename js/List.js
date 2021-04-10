@@ -1,4 +1,3 @@
-require('magic-globals');
 const Tokenizer = require('./Tokenizer');
 const Entry = require('./Entry');
 const strings = require('./glsstrings');

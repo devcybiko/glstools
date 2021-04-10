@@ -1,5 +1,3 @@
-require('magic-globals');
-
 class StringBuffer {
     constructor(s) {
         this._s = s.split('');

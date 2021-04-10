@@ -8,6 +8,7 @@ module.exports = {
      */
     readCSV: function (pagesCSVFname, env) {
         let lines = this.readScript(pagesCSVFname, env);
+        if (lines === null) return null;
         let header = [];
         let rows = [];
         for (const i in lines) {
@@ -30,6 +31,7 @@ module.exports = {
     // and converts each line to a regexp
     readRegExp: function (fname, env) {
         let lines = this.readScript(fname, env);
+        if (lines === null) return null;
         let rows = [];
         for (const line of lines) {
             let regexp = new RegExp(line, 'i');
@@ -44,6 +46,7 @@ module.exports = {
      */
     readScript: function (fname, env) {
         let lines = this.readList(fname, env);
+        if (lines === null) return null;
         let rows = [];
         for (let line of lines) {
             let pound = line.indexOf('#');
@@ -61,6 +64,7 @@ module.exports = {
      */
     readList: function (fname, env) {
         let text = this.read(fname, env);
+        if (text === null) return null;
         let textByLine = text.split('\n');
         return textByLine;
     },
@@ -70,6 +74,7 @@ module.exports = {
      */
     readJSON: function (fname, env) {
         let text = this.read(fname, env);
+        if (text === null) return null;
         let json = JSON.parse(text);
         return json;
     },
@@ -80,6 +85,7 @@ module.exports = {
      */
     readJSONC: function (fname, env) {
         let lines = this.readList(fname, env);
+        if (lines === null) return null;
         for (let i = 0; i < lines.length; i++) {
             let jsonLine = lines[i];
             let index;
@@ -131,7 +137,7 @@ module.exports = {
         try {
             text = fs.readFileSync(fname).toString('utf-8');
         } catch (ex) {
-            // do nothing
+            return null;
         }
         return text;
     },
@@ -207,6 +213,7 @@ module.exports = {
     },
 
     expandFname: function (_fname, env) {
+        if (typeof _fname !== "string" ) return null;
         let fname = strings.replaceAll(_fname, "~", "${HOME}");
         fname = strings.meta(fname, env);
         if (fname.includes("$") || fname.includes("{") || fname.includes("}")) {
@@ -226,6 +233,7 @@ module.exports = {
                     break;
                 }
             }
+            if (result) break;
         }
         return result;
     },
@@ -269,9 +277,7 @@ module.exports = {
         if (colon === -1) return fname;
         let path = fname.substring(0, colon);
         let paths = this.parsePath(path, null);
-
         let basename = fname.substring(colon + 1);
-
         let dot = basename.indexOf('.');
         let extensions = [];
         if (dot !== -1 || dot !== 0) { // we don't look for hidden files
