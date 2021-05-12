@@ -30,12 +30,27 @@ module.exports = {
         return s;
     },
 
-    //
-    // args("-opt1=default,-opt2*,-opt3", "infile*,outfile=a.jnk"); // options, positional parameters, *=required, '='=value expected, value after '=' is default value if not supplied
+    // args(options, posnparms, dieOnFailure) -> {opts}
+    //   options: 
+    //       --name: an option (returns an array of [true,...] for each time --name appears)
+    //       --name=: an option that requires a value (returns [value,...] for each time --name=value appears
+    //       --name=default: an option that requires a value and has a default if not specified
+    //       --name*=default: an option that is required and has a default value (returns [value,...])
+    //       --name-n*=default: an option --name with an alias -n
+    //       -n: a simple option (defined exactly the same as --name, but with only one dash)
+    //   fileparms:
+    //      name: returns opts.name for the positional parm passed in
+    //      name*: required positional parm
+    //      name=default: default value for positional parm
+    //      name*=default: invalid - logically, you cannot have a required positinal parm that also has a default
+    // args("--opt1=default,--opt2*,--opt3,-o,--opt4-o=default", "infile*,outfile=a.jnk");
+    //  
+    //     options, positional parameters, *:required, '=':value required, value after '=' is default value if not supplied
+    //     NOTE: --opt-o => -o is alias for --opt
     // returns an object as follows:
     // {
     //   files: [...] // all non-option args in order
-    //   optname: [...] // array of all -opt=value options (always at least an empty list)
+    //   optname: [...] // array of all -opt=value options (always at least an empty list if specified)
     //   infile: value // positional parameters 
     //   outfile: value
     // }    
@@ -54,14 +69,19 @@ module.exports = {
                 // its an option
                 let hasEquals = arg.indexOf("=") !== -1;
                 let words = arg.split("=", 2);
-                let optionName = words[0];
+                let dashName = words[0];
                 let value = words[1];
-                if (!options[optionName]) {
-                    results._errors.push(`Unknown option: ${optionName}`);
+                let option = options[dashName];
+                if (!option) {
+                    results._errors.push(`Unknown option: ${dashName}`);
                     continue;
                 }
-                if (!hasEquals) value = options[optionName].defaultValue;
-                let { name, required } = trimOption(optionName);
+                if (option.requiresValue && !hasEquals) {
+                    results._errors.push(`option '${dashName}' requires a value after the '=' sign`);
+                    continue;
+                }
+                value = value || options[dashName].defaultValue;
+                let name = option.name;
                 results[name] = results[name] || []; // create an array if it doesn't exist
                 results[name].push(value); // options are always a list
             } else {
@@ -78,7 +98,7 @@ module.exports = {
         for (let key of Object.keys(options)) {
             let opt = options[key];
             if (opt.required && !results[opt.name]) results._errors.push(`Missing required option: ${key}`);
-            if (!results[opt.name] && opt.defaultValue !== true) results[opt.name] = [opt.defaultValue]; // add in the default values that you did not supply
+            if (!results[opt.name] && opt.defaultValue === undefined) results[opt.name] = [opt.defaultValue]; // add in the default values that you did not supply
         }
 
         // check for required parms
@@ -94,18 +114,31 @@ module.exports = {
 
 function trimOption(option) {
     let required = false;
-    let optionName = option;
+    let dashName = option;
+    let aliasName;
+    dashes = 0;
     let name = option;
     if (name[0] !== '-') this.die("options must start with a dash (-) " + name);
     name = name.substring(1); // trim off the leading dash
-    if (name[0] === '-') name = name.substring(1); // trim off the second leading dash
+    dashes++;
+    if (name[0] === '-') {
+        name = name.substring(1); // trim off the second leading dash
+        dashes++;
+    }
     if (name[name.length - 1] === '*') {
         // required option
         name = name.substring(0, name.length - 1);
-        optionName = optionName.substring(0, optionName.length - 1);
+        dashName = dashName.substring(0, dashName.length - 1);
         required = true;
     }
-    return { name, required, optionName };
+    let words = name.split("-", 2); // handle aliases
+    if (words.length > 1) {
+        name = words[0];
+        aliasName = "-" + words[1];
+        dashName = "--".substring(0, dashes) + name;
+    }
+
+    return { name, required, dashName, aliasName };
 }
 
 function trimParm(parm) {
@@ -123,18 +156,19 @@ function parseOptions(optionString) {
     let options = {};
     let optionList = optionString.split(",");
     for (let optionItem of optionList) {
-        if (optionItem === "") continue;
+        if (!optionItem) continue;
         let hasEquals = optionItem.indexOf("=") !== -1;
         let words = optionItem.split("=", 2);
         let optionDefinition = words[0];
         let defaultValue = words[1];
-        if (!hasEquals) defaultValue = true;
-        let { name, required, optionName } = trimOption(optionDefinition);
-        options[optionName] = {
+        let { name, required, dashName, aliasName } = trimOption(optionDefinition);
+        options[dashName] = {
             name,
             required,
             defaultValue,
+            valueRequired: hasEquals
         };
+        options[aliasName] = options[dashName];
     }
     return options;
 }
@@ -161,12 +195,12 @@ function parseParms(parmString) {
 }
 
 function test() {
-    let opts = "-a,-b*,-c=c.default,-d*=_empty_,-e=e.default,-f=,-x";
+    let opts = "--extra-x,-a,-b*,-c=c.default,-d*=_empty_,-e=e.default,-f=";
     let parms = "one,two*,three=three.default,four";
     process.argv = [
         "node",
         "glsprocs.js",
-        "-a", "-b", "foo", "bar", "-b=funstuff", "-c=", "-c", "-d", "-d=", "-d=d.default", "-f"
+        "-a", "-b", "foo", "bar", "-b=funstuff", "-c=", "-c", "-d", "-d=", "-d=d.default", "-f", "-x"
     ];
     let options = module.exports.args(opts, parms, false);
     //console.log({ options });
@@ -204,4 +238,4 @@ function test() {
     if (options.x) console.log("x: " + JSON.stringify(options.x));
 }
 
-//test();
+test();
