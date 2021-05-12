@@ -32,7 +32,7 @@ module.exports = {
 
     // args(options, posnparms, dieOnFailure) -> {opts}
     //   options: 
-    //       --name: an option (returns an array of [true,...] for each time --name appears)
+    //       --name: an atomic option, no value assignment allowed (returns an array of [true,...] for each time --name appears)
     //       --name=: an option that requires a value (returns [value,...] for each time --name=value appears
     //       --name=default: an option that requires a value and has a default if not specified
     //       --name*=default: an option that is required and has a default value (returns [value,...])
@@ -76,14 +76,24 @@ module.exports = {
                     results._errors.push(`Unknown option: ${dashName}`);
                     continue;
                 }
-                if (option.requiresValue && !hasEquals) {
-                    results._errors.push(`option '${dashName}' requires a value after the '=' sign`);
-                    continue;
+                if (option.valueRequired) {
+                    if (hasEquals) {
+                        value = value; // nop
+                    } else {
+                        value = option.defaultValue;
+                    }
+                } else {
+                    if (hasEquals) {
+                        results._errors.push(`atomic option '${dashName}' cannot accept a value after '=' (=${value})`);
+                        continue
+                    } else {
+                        value = true;
+                    }
                 }
-                value = value || options[dashName].defaultValue;
                 let name = option.name;
                 results[name] = results[name] || []; // create an array if it doesn't exist
                 results[name].push(value); // options are always a list
+                console.log({name, value, results})
             } else {
                 // ordered parameter
                 if (nparm < parmlist.length) {
@@ -98,7 +108,6 @@ module.exports = {
         for (let key of Object.keys(options)) {
             let opt = options[key];
             if (opt.required && !results[opt.name]) results._errors.push(`Missing required option: ${key}`);
-            if (!results[opt.name] && opt.defaultValue === undefined) results[opt.name] = [opt.defaultValue]; // add in the default values that you did not supply
         }
 
         // check for required parms
@@ -162,13 +171,14 @@ function parseOptions(optionString) {
         let optionDefinition = words[0];
         let defaultValue = words[1];
         let { name, required, dashName, aliasName } = trimOption(optionDefinition);
+        if (required && !hasEquals) module.exports.die(`you cannot require option '${dashName}*' without also specifying '='`);
         options[dashName] = {
             name,
             required,
             defaultValue,
             valueRequired: hasEquals
         };
-        options[aliasName] = options[dashName];
+        if (aliasName) options[aliasName] = options[dashName];
     }
     return options;
 }
@@ -195,15 +205,15 @@ function parseParms(parmString) {
 }
 
 function test() {
-    let opts = "--extra-x,-a,-b*,-c=c.default,-d*=_empty_,-e=e.default,-f=";
+    let opts = "--extra-x,-a,-b=,-centry-c=c.default,-d*=_empty_,-e=e.default,-f=,-g*=required";
     let parms = "one,two*,three=three.default,four";
     process.argv = [
         "node",
         "glsprocs.js",
-        "-a", "-b", "foo", "bar", "-b=funstuff", "-c=", "-c", "-d", "-d=", "-d=d.default", "-f", "-x"
+        "-a", "-b=", "foo", "bar", "-b=funstuff", "-c=", "-c", "-d", "-d=", "-d=d-value", "-f=test", "-x", "-other", "--extra"
     ];
     let options = module.exports.args(opts, parms, false);
-    //console.log({ options });
+    console.log(options._errors);
     console.assert(options.files[0] === "foo", "missing first file");
     console.assert(options.files[1] === "bar", "missing second file");
     console.assert(options.files.length === 2, `wrong number of files ${options.files.length}`);
@@ -215,27 +225,34 @@ function test() {
     console.assert(!!options.a === true, "-a should be present");
     console.assert(options.b, "-b should be specified at least once");
     console.assert(options.b.length === 2, "-b should be specified twice");
-    console.assert(options.b[0] === true, "-b[0] should be true");
+    console.assert(options.b[0] === "", "-b[0] should be the empty string '' ");
     console.assert(options.b[1] === "funstuff", "-b[0] should be funstuff");
-    console.assert(options.c, "-c should be specified");
-    console.assert(options.c[0] === "", "-c[0] should be empty");
-    console.assert(options.c[1] === "c.default", "-c[1] should be c.default");
+    console.assert(options.centry, "-centry (-c) should be specified");
+    console.assert(options.centry[0] === "", "-c[0] should be empty");
+    console.assert(options.centry[1] === "c.default", "-c[1] should be c.default");
     console.assert(options.d, "-d should be specified at least once");
     console.assert(options.d[0] === "_empty_", "-d[0] should be _empty_");
     console.assert(options.d[1] === "", "-d[1] should be ''");
-    console.assert(options.d[2] === "d.default", "-d[d] should be d.default");
+    console.assert(options.d[2] === "d-value", "-d[d] should be d-value");
     console.assert(options.e === undefined, "-e should not be present");
     console.assert(options.f.length === 1, "-f should be assigned");
     console.assert(options.f[0] === '', "-f should be the empty string");
-    console.assert(!!options.x === false, "-x should not be present");
+    console.assert(!!options.x === true, "-extra-x should be specified");
+    console.assert(options._errors.length === 2, "there should be 2 errors");
+    console.assert(options._errors[0] === 'Unknown option: -other', "__errors should report 'Unknown option: -other'");
+    console.assert(options._errors[1] === 'Missing required option: -g', "__errors should report 'Missing required option: -g'");
+    console.log("a: " + JSON.stringify(options.a));
+    console.log("b: " + JSON.stringify(options.b));
+    console.log("c: " + JSON.stringify(options.centry));
+    console.log("d: " + JSON.stringify(options.d));
+    console.log("e: " + JSON.stringify(options.e));
+    console.log("f: " + JSON.stringify(options.f));
+    console.log("g: " + JSON.stringify(options.f));
+    console.log("x: " + JSON.stringify(options.x));
+    console.log("extra: " + JSON.stringify(options.extra));
+    console.log(opts);
+    console.log(JSON.stringify(process.argv));
 
-    if (options.a) console.log("a: " + options.a);
-    if (options.b) console.log("b: " + options.b);
-    if (options.c) console.log("c: " + options.c);
-    if (options.d) console.log("d: " + options.d);
-    if (options.e) console.log("e: " + options.e);
-    if (options.f) console.log("f: " + JSON.stringify(options.f));
-    if (options.x) console.log("x: " + JSON.stringify(options.x));
 }
 
 test();
