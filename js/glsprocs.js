@@ -32,33 +32,46 @@ module.exports = {
 
     // args(options, posnparms, dieOnFailure) -> {opts}
     //   options: 
-    //       --name: an atomic option, no value assignment allowed (returns an array of [true,...] for each time --name appears)
-    //       --name=: an option that requires a value (returns [value,...] for each time --name=value appears
-    //       --name=default: an option that requires a value and has a default if not specified
-    //       --name*=default: an option that is required and has a default value (returns [value,...])
-    //       --name-n*=default: an option --name with an alias -n
-    //       -n: a single-dash option (defined exactly the same as --name, but with only one dash)
+    //       NOTE: the biggest mistake people make is that all --options are arrays of values
+    //       --name: an atomic option, no value assignment allowed
+    //          returns an array of [true,...] for each time --name appears
+    //          opts.name is 'truthy' if specified,
+    //          opts.name will be undefined if --name is never encountered
+    //          opts.name.length === number of times --name is encounterd
+    //       --name=: an option that requires a value 
+    //          returns [value,...] for each time --name=value appears
+    //          '--name=' returns the empty string
+    //          '--name' is an error
+    //       --name=defaultValue: an option that requires a value and has a default value
+    //          returns [value,...] for each time --name=value appears
+    //          if the '--name=somevalue' is not given, opts.name => [defaultValue]
+    //       --name*=: an option that is required (must not have a default value)
+    //          returns [value,...] for each time --name=value appears
+    //          returns an error if '--name=somevalue' does not appear
+    //       --name-n=default: an option --name with an alias -n
+    //          returns [value,...] for each time --name=value appears
+    //          works exactly the same as all above - but both -name and -n are respected on the cmdline
+    //       -name: a single-dash option (defined exactly the same as --name, but with only one dash)
+    //          works exactly the same as all above - except -name is respected on the cmdline
+    //          (usually reserved for atomic options eg: -a, -b, etc...
+    //       NOTE: Sadly, composing multiple atomic options in one query is not permitted
+    //          Example: ls -latr ### the 4 atomic options -l -a -t -r are #not# handled by gprocs.args
     //   fileparms:
     //      name: returns opts.name for the positional parm passed in
     //      name*: required positional parm
     //      name=default: default value for positional parm
-    //      name*=default: invalid - logically, you cannot have a required positinal parm that also has a default
-    // args("--opt1=default,--opt2*,--opt3,-o,--opt4-o=default", "infile*,outfile=a.jnk");
-    //  
-    //     options, positional parameters, *:required, '=':value required, value after '=' is default value if not supplied
-    //     NOTE: --opt-o => -o is alias for --opt
-    // returns an object as follows:
-    // {
-    //   files: [...] // all non-option args in order
-    //   optname: [...] // array of all -opt=value options (always at least an empty list if specified)
-    //   infile: value // positional parameters 
-    //   outfile: value
-    // }    
+    //      name*=default: invalid - logically, you cannot have a required positinal parm that also has a default value
+    //   dieOnFailure: true => prints errors and usage.
+    //   opts:
+    //      opts._errors = an array of erroneous inputs
+    //      opts._files = an array of all non-option inputs on the cmdline
+    //   EXAMPLE: opts = args("-a,-b=,-centry-c=c.default,-d*=,-e=,-f=,--extra-x,-g*=,-h=h.default", "one,two*,three=three.default,four");
+
     args: function (optionString = "", parmString = "", andDie = true) {
         let options = parseOptions(optionString);
         let parmlist = parseParms(parmString);
         // console.log({ options, parmlist });
-        let results = { files: [], _errors: [] };
+        let results = { _files: [], _errors: [] };
         let nparm = 0;
         let usage = this.usage(optionString, parmString);
 
@@ -94,7 +107,7 @@ module.exports = {
                         results._errors.push(`value option '${dashName}=' requires a value after '=' sign`);
                         continue;
                     }
-                    if (value === "" && option.defaultValue) value = option.defaultValue;
+                    // if (value === "" && option.defaultValue) value = option.defaultValue;
                     // otherwise, use the value specified `value = words[1];`
                 }
                 results[name] = results[name] || []; // create an array if it doesn't exist
@@ -105,7 +118,7 @@ module.exports = {
                     let parm = parmlist[nparm++];
                     results[parm.name] = arg;
                 }
-                results.files.push(arg);
+                results._files.push(arg);
             }
         }
         //console.log(results);
@@ -113,6 +126,7 @@ module.exports = {
         for (let key of Object.keys(options)) {
             let opt = options[key];
             if (opt.required && !results[opt.name]) results._errors.push(`Missing required option: ${key}`);
+            if (opt.defaultValue && !results[opt.name]) results[opt.name] = [opt.defaultValue];
         }
 
         // check for required parms
@@ -213,7 +227,7 @@ function parseParms(parmString) {
 }
 
 function test() {
-    let opts = "-a,-b=,-centry-c=c.default,-d*=,-e=e.default,-f=,--extra-x,";
+    let opts = "-a,-b=,-centry-c=c.default,-d*=,-e=,-f=,--extra-x,-g*=,-h=h.default";
     let parms = "one,two*,three=three.default,four";
     process.argv = [
         "node",
@@ -233,10 +247,10 @@ function test() {
         console.assert(ex.toString() === "you cannot require atomic option '-z*'", "-z* did not throw the correct exception");
     }
     let options = module.exports.args(opts, parms, false);
-    console.log(options._errors);
-    console.assert(options.files[0] === "foo", "missing first file");
-    console.assert(options.files[1] === "bar", "missing second file");
-    console.assert(options.files.length === 2, `wrong number of files ${options.files.length}`);
+    // console.log(options._errors);
+    console.assert(options._files[0] === "foo", "missing first file");
+    console.assert(options._files[1] === "bar", "missing second file");
+    console.assert(options._files.length === 2, `wrong number of files ${options._files.length}`);
     console.assert(options.one === "foo", "bad first parameter");
     console.assert(options.two === "bar", "bad second parameter");
     console.assert(options.three === "three.default", "bad third parameter");
@@ -249,22 +263,22 @@ function test() {
     console.assert(options.b[1] === "funstuff", "-b[0] should be funstuff");
     console.assert(options.centry, "-centry (-c) should be specified");
     console.assert(options.centry.length === 2, "-centry (-c) should have 2 values");
-    console.assert(options.centry[0] === "c.default", "-centry[0] have the default value");
+    console.assert(options.centry[0] === "", "-centry[0] have the empty value");
     console.assert(options.centry[1] === "value", "-centry[1] should have the 'value'");
     console.assert(options.d, "-d should be specified at least once");
     console.assert(options.d.length === 1, "-d should be specified at least once");
-    console.assert(options.d[2] === "d-value", "-d[d] should be d-value");
-    console.assert(options.e === undefined, "-e should not be present");
+    console.assert(options.d[0] === "d-value", "-d[0] should be 'value'");
+    console.assert(options.e === undefined, `-e should not be present ${options.e}`);
     console.assert(options.f.length === 1, "-f should be assigned");
-    console.assert(options.f[0] === '', "-f should be the empty string");
-    console.assert(!!options.x === true, "-extra-x should be specified");
-    console.assert(options._errors.length === 2, "there should be 2 errors");
-    console.assert(options._errors[0] === 'Unknown option: -other', "__errors should report 'Unknown option: -other'");
-    console.assert(options._errors[1] === 'Missing required option: -g', "__errors should report 'Missing required option: -g'");
-    console.log(JSON.stringify(options, null, 2));
+    console.assert(options.f[0] === 'test', "-f should be  'test'");
+    console.assert(options.h[0] === 'h.default', "-h should be the 'h.default'");
+    console.assert(!!options.extra === true, "-extra or -x should be specified");
+    console.assert(options.extra.length === 2, "-extra or -x should be specified twice");
+    console.assert(options._errors.length === 5, "there should be 5 errors");
+    console.log(JSON.stringify(options));
     console.log(opts);
     console.log(JSON.stringify(process.argv));
 
 }
 
-test();
+//test();
