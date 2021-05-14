@@ -21,7 +21,11 @@ function __ignore(s, end="") {
 function __lines(s, start, end) {
     let lines = s.split("\n");
     lines = lines.slice(start,end);
-    return lines.join("");
+    return lines.join("\n");
+}
+
+function __json(fname, fs, fe, __parms={}, __depth=16) {
+    return __lines(__include(fname, fs, fe, __parms, __depth), 1, -1);
 }
 
 function __include(fname, fs, fe, __parms={}, __depth=16) {
