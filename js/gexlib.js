@@ -18,6 +18,12 @@ function __ignore(s, end="") {
     return end;
 }
 
+function __lines(s, start, end) {
+    let lines = s.split("\n");
+    lines = lines.slice(start,end);
+    return lines.join("");
+}
+
 function __include(fname, fs, fe, __parms={}, __depth=16) {
     for(let __key of Object.keys(__parms)) {
         let __value = __parms[__key];
