@@ -24,6 +24,10 @@ function __lines(s, start, end) {
     return lines.join("\n");
 }
 
+function __list(arr) {
+    return '"' + arr.join('","') + '"';
+}
+
 function __json(fname, __parms={}, fs, fe, __depth=16) {
     return __lines(__include(fname, __parms, fs, fe, __depth), 1, -1);
 }
