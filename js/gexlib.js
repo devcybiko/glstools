@@ -24,24 +24,27 @@ function __lines(s, start, end) {
     return lines.join("\n");
 }
 
-function __json(fname, fs, fe, __parms={}, __depth=16) {
-    return __lines(__include(fname, fs, fe, __parms, __depth), 1, -1);
+function __json(fname, __parms={}, fs, fe, __depth=16) {
+    return __lines(__include(fname, __parms, fs, fe, __depth), 1, -1);
+}
+function __metajson(fname, arr, parms={}, fs, fe, depth=16) {
+    return arr.map(item => __json(fname, {...parms, meta:item}, fs, fe, depth)).join(",\n");
 }
 
-function __include(fname, fs, fe, __parms={}, __depth=16) {
+function __include(__fname, __parms={}, __fs, __fe, __depth=16) {
     for(let __key of Object.keys(__parms)) {
         let __value = __parms[__key];
         eval(`${__key}=${JSON.stringify(__value)}`);
     }
 
-    __currfile.push(fname);
-    fs = fs || __peek(__Fs);
-    fe = fe || __peek(__Fe);
-    __Fs.push(fs);
-    __Fe.push(fe);
-    let __text = __gfiles.read("${includePath}:"+fname, __env);
+    __currfile.push(__fname);
+    __fs = __fs || __peek(__Fs);
+    __fe = __fe || __peek(__Fe);
+    __Fs.push(__fs);
+    __Fe.push(__fe);
+    let __text = __gfiles.read("${includePath}:"+__fname, __env);
     if (__text === null) __die(`ERROR: could not read file "${__currfile.pop()} from file "${__currfile.pop()}" with include path: "${__env.includePath}"`, 1);
-    let result = __expand(__text, fs, fe, __parms, __depth);
+    let result = __expand(__text, __parms, __fs, __fe, __depth);
     __currfile.pop();
     __Fs.pop();
     __Fe.pop();
@@ -60,7 +63,7 @@ function __insert(fname) {
 }
 
 
-function __expand(__text, fs, fe, __parms={},__depth=16) {
+function __expand(__text, __parms={}, fs, fe, __depth=16) {
     if (__depth === 0) return __text;
     if (typeof __text !== "string") return "";
     for(let __key of Object.keys(__parms)) {
@@ -79,7 +82,7 @@ function __expand(__text, fs, fe, __parms={},__depth=16) {
             __expr = __match[1];
             __value = eval(__expr);
             if (__value === undefined) throw new Error("Undefined Result upon eval()");
-            if (__expr.substring(0,2) !== "__") __value = __expand(__value, fs, fe, __parms, __depth-1); // expand the result if it's not a directive
+            if (__expr.substring(0,2) !== "__") __value = __expand(__value, __parms, fs, fe, __depth-1); // expand the result if it's not a directive
         } catch(error) {
             console.error(error);
             __value = undefined;
