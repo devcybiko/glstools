@@ -299,7 +299,7 @@ module.exports = {
 
     findFname: function (_fname, env) {
         let fname = this.expandFname(_fname, env);
-        if (!options.searchFilenames) return fname;
+        if (!options.searchFilename) return fname;
         if (fname === null) return throwOrNull("findFname: invalid _fname: " + _fname);
 
         let colon = fname.lastIndexOf(':');
