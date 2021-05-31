@@ -324,10 +324,12 @@ module.exports = {
     },
 
     stat: function (_fname, env) {
-        let fname = this.findFname(_fname, env);
+        let fname = this.expandFname(_fname, env);
         if (fname === null) return throwOrNull("stat: invalid _fname: " + _fname);
-	console.log({fname});
-        return fs.statSync(fname);
-    },
-
+	try {
+            return fs.statSync(fname);
+	} catch (ex) {
+	    return throwOrNull("stat: invalid _fname: " + _fname);
+	}
+    }
 }
