@@ -1,4 +1,5 @@
 const __gfiles = require('./glsfiles.js');
+const JSON = require("json5");
 
 __peek = function(arr) {
     return arr.length === 0 ? undefined : arr[arr.length-1];
