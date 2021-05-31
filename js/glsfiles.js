@@ -194,6 +194,7 @@ module.exports = {
             this.createDir(dirname, env);
         }
         let buffer = new Buffer.from(str);
+        console.log({fname});
         let fd = fs.openSync(fname, mode);
         fs.writeSync(fd, buffer, 0, buffer.length, null);
         fs.closeSync(fd);
