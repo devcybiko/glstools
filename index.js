@@ -13,4 +13,4 @@ const List = require('./js/List');
 const StringBuffer = require('./js/StringBuffer');
 const Tokenizer = require('./js/Tokenizer');
 
-module.exports = {arrays, aws, chars, debug, files, gex, maths, objects, procs, strings, Entr, List, StringBuffer, Tokenizer};
+module.exports = {arrays, aws, chars, debug, files, gex, maths, objects, procs, strings, Entry, List, StringBuffer, Tokenizer};
