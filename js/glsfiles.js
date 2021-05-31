@@ -326,6 +326,7 @@ module.exports = {
     stat: function (_fname, env) {
         let fname = this.findFname(_fname, env);
         if (fname === null) return throwOrNull("stat: invalid _fname: " + _fname);
+	console.log({fname});
         return fs.statSync(fname);
     },
 
