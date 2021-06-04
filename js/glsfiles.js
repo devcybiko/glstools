@@ -1,6 +1,6 @@
 const fs = require('fs');
 const strings = require('./glsstrings');
-const JSON = require("json5");
+const JSON5 = require("json5");
 
 let options = {
     throwOnError: false,
@@ -93,7 +93,7 @@ module.exports = {
     readJSON: function (fname, env) {
         let text = this.read(fname, env);
         if (text === null) return throwOrNull("readJSON: invalid fname: " + fname);
-        let json = JSON.parse(text);
+        let json = JSON5.parse(text);
         return json;
     },
 
@@ -101,7 +101,7 @@ module.exports = {
      * read a text file as a JSONC (JSON w/ comments) object
      * WARNING: Doesn't like http://urls.... (because of //)
      */
-    readJSONC: function (fname, env) {
+    _readJSONC: function (fname, env) {
         let lines = this.readList(fname, env);
         if (lines === null) return throwOrNull("readJSONC: invalid fname: " + fname);
         for (let i = 0; i < lines.length; i++) {
@@ -121,10 +121,12 @@ module.exports = {
             lines[i] = jsonLine;
         }
         let result = lines.join('\n');
-        let json = JSON.parse(result || '{}');
+        let json = JSON5.parse(result || '{}');
         return json;
     },
-
+    readJSONC: function (fname, env) {
+	return JSON5.parse(result || {});
+    },
     /**
      * read all the filenames and directory-names (excluding ., .., and hidden files beginning with .)
      */
