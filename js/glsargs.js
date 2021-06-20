@@ -74,7 +74,7 @@ const args = function (optionString = "", parmString = "", andDie = true) {
                 results._errors.push(`Unknown option: ${dashName}`);
                 continue;
             }
-            if (option.isAtomic) {
+            if (option.isBoolean) {
                 if (hasEquals) {
                     results._errors.push(`boolean option '${dashName}' cannot accept a value after '=' (=${value})`);
                     continue
@@ -113,7 +113,7 @@ const args = function (optionString = "", parmString = "", andDie = true) {
     for (let key of Object.keys(options)) {
         let opt = options[key];
         if (opt.required && !results[opt.name]) results._errors.push(`Missing required option: ${key}`);
-        if (opt.defaultValue && !results[opt.name]) results[opt.name] = [opt.defaultValue];
+        if (opt.defaultValue && !results[opt.name]) results[opt.name] = opt.array ? [opt.defaultValue] : opt.defaultValue;
     }
 
     // check for required parms
@@ -178,19 +178,19 @@ function parseOptions(optionString) {
     for (let optionItem of optionList) {
         if (!optionItem) continue;
         let hasEquals = optionItem.indexOf("=") !== -1;
-        let isAtomic = !hasEquals;
+        let isBoolean = !hasEquals;
         let words = optionItem.split("=", 2);
         let optionDefinition = words[0];
         let defaultValue = words[1];
         let { name, required, array, dashName, aliasName } = trimOption(optionDefinition);
-        if (required && isAtomic) throw (`you cannot require boolean option '${dashName}*'`);
-        if (required && !isAtomic && defaultValue) throw (`you cannot require a value option '${dashName}*' and give it a default value '${defaultValue}'`);
+        if (required && isBoolean) throw (`you cannot require boolean option '${dashName}*'`);
+        if (required && !isBoolean && defaultValue) throw (`you cannot require a value option '${dashName}*' and give it a default value '${defaultValue}'`);
         options[dashName] = {
             name,
             required,
             array,
             defaultValue,
-            isAtomic: !hasEquals
+            isBoolean: isBoolean
         };
         if (aliasName) options[aliasName] = options[dashName];
     }
@@ -269,7 +269,7 @@ function test() {
     console.assert(options.e === undefined, `-e should not be present ${options.e}`);
     console.assert(options.f, "-f should be assigned");
     console.assert(options.f === 'test', "-f should be  'test'");
-    console.assert(options.h[0] === 'h.default', "-h should be the 'h.default'");
+    console.assert(options.h === 'h.default', "-h should be 'h.default'");
     console.assert(!!options.extra === true, "-extra or -x should be specified");
     console.assert(options._errors.length === 5, "there should be 5 errors");
     // console.log(JSON.stringify(options));
