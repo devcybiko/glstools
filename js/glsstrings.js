@@ -1,3 +1,5 @@
+const { v4: uuidv4 } = require('uuid');
+
 module.exports = {
     checkRestricted: function (src, restricted) {
         return !src.split("").some(ch => restricted.indexOf(ch) !== -1);
@@ -82,5 +84,10 @@ module.exports = {
     },
     indexOf: function(str, c) {
         return str.indexOf(c) + 1;
+    },
+    uuid(prefix = "") {
+        if (prefix) prefix = prefix + "-";
+        let uuid = uuidv4();
+        return prefix+"-"+uuid;
     }
 }

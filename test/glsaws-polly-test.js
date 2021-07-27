@@ -1,4 +1,4 @@
-let aws = require('../glsaws/glsaws-index.js');
+let aws = require('../js/glsaws/glsaws-index.js');
 let polly = aws.polly;
 
 async function main$() {

@@ -14,10 +14,10 @@ function throwOrNull(ex) {
 }
 
 module.exports = {
-    getOptions: function() {
+    getOptions: function () {
         return options;
     },
-    setOptions: function(_options) {
+    setOptions: function (_options) {
         options = _options;
     },
     /**
@@ -64,7 +64,7 @@ module.exports = {
      */
     readScript: function (fname, env) {
         let lines = this.readList(fname, env);
-        if (lines === null) ;
+        if (lines === null);
         let rows = [];
         for (let line of lines) {
             let pound = line.indexOf('#');
@@ -125,18 +125,19 @@ module.exports = {
         return json;
     },
     readJSONC: function (fname, env) {
-	return JSON5.parse(result || {});
+        let lines = this.read(fname, env);
+        return JSON5.parse(lines);
     },
     /**
      * read all the filenames and directory-names (excluding ., .., and hidden files beginning with .)
      */
-    readDir: function (_dirname, theFilter = (dirname => dirname[0] !== '.'), env, isfullname=false) {
+    readDir: function (_dirname, theFilter = (dirname => dirname[0] !== '.'), env, isfullname = false) {
         let dirname = this.findFname(_dirname, env);
         if (!dirname) return throwOrNull("readDir: invalid _dirname: " + _dirname);
         let fnames = fs.readdirSync(dirname).filter(theFilter);
         if (isfullname) {
             let fullnames = []
-            for(let fname of fnames) {
+            for (let fname of fnames) {
                 fullnames.push(path.join(dirname, fname));
             }
             fnames = fullnames;
@@ -186,7 +187,7 @@ module.exports = {
      * returns the name of the file if successful
      * returns null if there is an error
      */
-    write: function (_fname, str, env = process.env, mode="w") {
+    write: function (_fname, str, env = process.env, mode = "w") {
         let fname = this.expandFname(_fname, env);
         if (fname === null) return throwOrNull("write: invalid fname: " + fname);
 
@@ -196,7 +197,7 @@ module.exports = {
             this.createDir(dirname, env);
         }
         let buffer = new Buffer.from(str);
-        console.log({fname});
+        console.log({ fname });
         let fd = fs.openSync(fname, mode);
         fs.writeSync(fd, buffer, 0, buffer.length, null);
         fs.closeSync(fd);
@@ -244,7 +245,7 @@ module.exports = {
 
     expandFname: function (_fname, env) {
         if (!options.expandFilename) return _fname;
-        if (typeof _fname !== "string" ) return throwOrNull("expandFname: invalid _fname: " + _fname);
+        if (typeof _fname !== "string") return throwOrNull("expandFname: invalid _fname: " + _fname);
         let fname = strings.replaceAll(_fname, "~", "${HOME}");
         fname = strings.meta(fname, env);
         if (fname.includes("$") || fname.includes("{") || fname.includes("}")) {
@@ -329,10 +330,10 @@ module.exports = {
     stat: function (_fname, env) {
         let fname = this.expandFname(_fname, env);
         if (fname === null) return throwOrNull("stat: invalid _fname: " + _fname);
-	try {
+        try {
             return fs.statSync(fname);
-	} catch (ex) {
-	    return throwOrNull("stat: invalid _fname: " + _fname);
-	}
+        } catch (ex) {
+            return throwOrNull("stat: invalid _fname: " + _fname);
+        }
     }
 }
