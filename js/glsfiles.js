@@ -1,6 +1,7 @@
 const fs = require('fs');
 const strings = require('./glsstrings');
 const JSON5 = require("json5");
+const path = require('path');
 
 let options = {
     throwOnError: false,
