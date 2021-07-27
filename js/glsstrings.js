@@ -86,7 +86,6 @@ module.exports = {
         return str.indexOf(c) + 1;
     },
     uuid(prefix = "") {
-        if (prefix) prefix = prefix + "-";
         let uuid = uuidv4();
         return prefix+"-"+uuid;
     }

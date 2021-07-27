@@ -16,8 +16,10 @@ module.exports = {
     _showBreadcrumbs: false,
     _maxLevel: 0, // all levels
     _showname: false,
+    _frequency: 1,
+    _counter: -1,
 
-    _aliases: function() {
+    _aliases: function () {
         this.rarely = this.terse;
         this.sometimes = this.chatty;
         this.always = this.verbose;
@@ -46,15 +48,18 @@ module.exports = {
         this._aliases();
         return this;
     },
-    set: function (level, begin_end_bool = false, maxLevel = 0, showname = true) {
+    set: function (level, begin_end_bool = false, maxLevel = 0, showname = true, frequency = 1) {
         this._debug = level;
         this._begin_end_bool = begin_end_bool;
         this._maxLevel = maxLevel;
         this._showname = showname;
         this._aliases();
+        this._frequency = frequency;
         return this;
     },
     _log: function (where, data) {
+        this._counter++;
+        if (this._counter % this._frequency !== 0) return;
         let debugText = this._debugText(".", false, 2, 1);
         if (debugText === "") return; // no output if we've gone too deep in the stack trace
         if (typeof data === "string") {
@@ -65,7 +70,7 @@ module.exports = {
         }
     },
     // always outputs stdout
-    log: function (data) { 
+    log: function (data) {
         this._log(console.log, data);
     },
 
@@ -149,7 +154,7 @@ module.exports = {
         return caller;
     },
 
-    _debugText: function (indent = ".", showname = false, additionalStackLevel=0, additionalIndentLevel=0) {
+    _debugText: function (indent = ".", showname = false, additionalStackLevel = 0, additionalIndentLevel = 0) {
         var stack = this._callers(this._stackLevel + additionalStackLevel);
         if (this._maxLevel && (stack.depth - this._indentOffset > this._maxLevel)) return ""; // prune the stack to only so many levels deep
         var functionName = stack.callers[0].name;
