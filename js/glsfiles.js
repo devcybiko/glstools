@@ -198,11 +198,19 @@ module.exports = {
             this.createDir(dirname, env);
         }
         let buffer = new Buffer.from(str);
-        console.log({ fname });
+        // console.log({ fname });
         let fd = fs.openSync(fname, mode);
         fs.writeSync(fd, buffer, 0, buffer.length, null);
         fs.closeSync(fd);
         return fname;
+    },
+
+    isOutOfDate: function (fname, timeout) {
+        let stat = this.stat(fname);
+        if (!stat) return true;
+        let mtimeMs = stat.mtimeMs;
+        let now = (new Date()).getTime();
+        return mtimeMs + timeout <= now;
     },
 
     /**
