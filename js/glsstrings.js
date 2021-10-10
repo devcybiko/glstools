@@ -90,16 +90,19 @@ module.exports = {
         let uuid = uuidv4();
         return prefix + "-" + uuid;
     },
-    passwordEncrypt(password, salt) {
+    passwordEncrypt(password, salt="salt") {
         let hash = crypto.createHmac('sha512', salt);
         hash.update(password);
-        let value = hash.digest('hex');
-        return value;
+        let hashedPassword = hash.digest('hex');
+        return hashedPassword;
     },
-    passwordCompare(password, 
-    hash(prefix) {
+    passwordCompare(password, encryptedPassword, salt) {
+        let hashedPassword = this.passwordEncrypt(password, salt);
+        return encryptedPassword === hashedPassword;
+    },
+    hash(s, prefix) {
         const m1 = crypto.createHash('md5'); // can this be cached for performance? does it matter?
-        const hash = m1.update(password).digest('hex');
+        const hash = m1.update(s).digest('hex');
         if (prefix) return prefix + "-" + hash;
         else return hash;
     }
