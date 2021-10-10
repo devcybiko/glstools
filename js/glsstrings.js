@@ -1,4 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 
 module.exports = {
     checkRestricted: function (src, restricted) {
@@ -28,19 +29,19 @@ module.exports = {
         }
         return output;
     },
-    isLower: function(s) {
+    isLower: function (s) {
         return s.toLowerCase() === s;
     },
-    isUpper: function(s) {
+    isUpper: function (s) {
         return s.toUpperCase() === s;
     },
-    expand: function(str, env) {
+    expand: function (str, env) {
         if (!env) return str;
         let result = "";
         let pattern = /\$\{(.*?)\}/gm;
         let matches = str.matchAll(pattern);
         let last = 0;
-        for(let match of matches) {
+        for (let match of matches) {
             result += str.substring(last, match.index);
             let exp = env[match[1]];
             if (exp) {
@@ -53,7 +54,7 @@ module.exports = {
         result += str.substring(last);
         return result;
     },
-    meta: function(str, env, limit=8) {
+    meta: function (str, env, limit = 8) {
         if (!env) return str;
         let last = null;
         let result = str;
@@ -64,15 +65,15 @@ module.exports = {
         };
         return result;
     },
-    substring: function(str, start=0, end) {
+    substring: function (str, start = 0, end) {
         if (end < 0) end = str.length + end;
         let result = str.substring(start, end);
         return result;
     },
-    tochar: function(s = "") {
+    tochar: function (s = "") {
         return s.length ? s.charCodeAt(0) : undefined;
     },
-    istext: function(s="", threshold=1.0) {
+    istext: function (s = "", threshold = 1.0) {
         let ok = 0;
         let maxcnt = Math.min(s.length, 1000) || 1;
         for (let i = 0; i < maxcnt; i++) {
@@ -82,11 +83,24 @@ module.exports = {
         let diff = ok / maxcnt;
         return diff >= threshold;
     },
-    indexOf: function(str, c) {
+    indexOf: function (str, c) {
         return str.indexOf(c) + 1;
     },
     uuid(prefix = "") {
         let uuid = uuidv4();
-        return prefix+"-"+uuid;
+        return prefix + "-" + uuid;
+    },
+    passwordEncrypt(password, salt) {
+        let hash = crypto.createHmac('sha512', salt);
+        hash.update(password);
+        let value = hash.digest('hex');
+        return value;
+    },
+    passwordCompare(password, 
+    hash(prefix) {
+        const m1 = crypto.createHash('md5'); // can this be cached for performance? does it matter?
+        const hash = m1.update(password).digest('hex');
+        if (prefix) return prefix + "-" + hash;
+        else return hash;
     }
 }

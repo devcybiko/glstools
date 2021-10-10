@@ -57,4 +57,10 @@ describe('testing gls.strings', function () {
         let result = strings.substring(s, 0, -4);
         test.value(expected).is(result);
     });
+    it('password returns expected value with default salt', function() {
+        let s = "This is a test";
+        let expected = "This is a ";
+        let result = strings.password(s);
+        test.value(expected).is(result);
+    });
 });
