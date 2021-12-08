@@ -147,6 +147,21 @@ module.exports = {
 
     },
 
+    readDirRecursive: function (_dirname, theFilter = (dirname => dirname[0] !== '.'), env) {
+        let result = [];
+        let files = this.readDir(_dirname, theFilter, env, true);
+        if (!files) return files;
+        for (let file of files) {
+            if (fs.lstatSync(file).isDirectory()) {
+                let children = readDirRecursive(file, env);
+                result = result.concat(children);
+            } else {
+                result.push(file);
+            }
+        }
+        return result;
+    },
+
     /**
      * read a text file as one long string
      * returns null if the file cannot be found
