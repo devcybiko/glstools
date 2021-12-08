@@ -153,7 +153,7 @@ module.exports = {
         if (!files) return files;
         for (let file of files) {
             if (fs.lstatSync(file).isDirectory()) {
-                let children = readDirRecursive(file, env);
+                let children = this.readDirRecursive(file, env);
                 result = result.concat(children);
             } else {
                 result.push(file);
