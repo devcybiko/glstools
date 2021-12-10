@@ -132,7 +132,7 @@ module.exports = {
     /**
      * read all the filenames and directory-names (excluding ., .., and hidden files beginning with .)
      */
-    readDir: function (_dirname, theFilter = (dirname => dirname[0] !== '.'), env, isfullname = false) {
+    readDir: function (_dirname, theFilter = (fname => fname[0] !== '.'), env, isfullname = false) {
         let dirname = this.findFname(_dirname, env);
         if (!dirname) return throwOrNull("readDir: invalid _dirname: " + _dirname);
         let fnames = fs.readdirSync(dirname).filter(theFilter);
@@ -146,17 +146,16 @@ module.exports = {
         return fnames;
 
     },
-
-    readDirRecursive: function (_dirname, theFilter = (dirname => dirname[0] !== '.'), env) {
+    
+    readDirRecursive: function(_dirname, dirFilter=(dirname => dirname[0] !== '.'), fileFilter=(fname => fname[0] !== '.'), env) {
         let result = [];
-        let files = this.readDir(_dirname, theFilter, env, true);
-        if (!files) return files;
+        if (!dirFilter(_dirname)) return result;
+        let files = this.readDir(_dirname, (fname => true), env, true) || [];
         for (let file of files) {
+            if (fileFilter(file)) result.push(file); // note: adds directory name if it passes the file filter
             if (fs.lstatSync(file).isDirectory()) {
-                let children = this.readDirRecursive(file, env);
+                let children = this.readDirRecursive(file, dirFilter, fileFilter, env);
                 result = result.concat(children);
-            } else {
-                result.push(file);
             }
         }
         return result;
