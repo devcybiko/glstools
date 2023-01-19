@@ -85,7 +85,11 @@ function __expand(__text, __parms={}, fs, fe, __depth=16) {
     for(let __match of __matches) {
         try {
             __expr = __match[1];
-            __value = eval(__expr);
+            try {
+                __value = eval(__expr);
+            } catch(er) {
+                __value = fs+__exprt+fe;
+            }
             if (__value === undefined) throw new Error("Undefined Result upon eval()");
             if (__expr.substring(0,2) !== "__") __value = __expand(__value, __parms, fs, fe, __depth-1); // expand the result if it's not a directive
         } catch(error) {
