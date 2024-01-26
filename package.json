@@ -1,11 +1,13 @@
 {
-  "name": "glstools",
+  "name": "@devcybiko/glstools",
   "version": "1.8.16",
   "description": "",
   "emain": "js/index.js",
   "scripts": {
     "test": "mocha --recursive test",
-    "pub": "npm publish --access public"
+    "pub": "npm publish --access public --scope=@devcybiko --auth-type=legacy --registry=https://npm.pkg.github.com",
+    "login": "npm login --registry=https://npm.pkg.github.com --scope=@devcybiko --auth-type=legacy",
+    "logout": "npm logout --registry=https://npm.pkg.github.com --scope=@devcybiko --auth-type=legacy"
   },
   "author": "",
   "license": "ISC",
