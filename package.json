@@ -1,7 +1,8 @@
 {
   "name": "@devcybiko/glstools",
-  "version": "1.8.16",
+  "version": "1.8.17",
   "description": "",
+  "access": "public",
   "emain": "js/index.js",
   "scripts": {
     "test": "mocha --recursive test",
